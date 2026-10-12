@@ -112,7 +112,7 @@
           {t('new.url_label')}
           <input
             class="input"
-            type="url"
+            type="text"
             required
             placeholder={t('new.url_placeholder')}
             bind:value={url}

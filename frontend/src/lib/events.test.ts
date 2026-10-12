@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it } from 'vitest'
-import { handleEvent, live } from './events.svelte'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { connectEvents, handleEvent, live } from './events.svelte'
 
 const progress = {
   type: 'progress' as const,
@@ -30,8 +30,38 @@ describe('handleEvent', () => {
     expect(live.version).toBe(1)
   })
 
+  it('drops stale progress on playlist updates, keeping other playlists', () => {
+    handleEvent(progress)
+    handleEvent({ ...progress, playlist_id: 5 })
+    handleEvent({ type: 'playlist_updated', playlist_id: 4 })
+    expect(live.progress[4]).toBeUndefined()
+    expect(live.progress[5]).toBeDefined()
+  })
+
   it('flags an expired Yoto session', () => {
     handleEvent({ type: 'auth_required' })
     expect(live.authRequired).toBe(true)
+  })
+})
+
+describe('connectEvents', () => {
+  it('clears progress and refetches when the stream (re)opens', () => {
+    class FakeSource {
+      static last: FakeSource
+      onopen: (() => void) | null = null
+      onmessage: unknown = null
+      close = vi.fn()
+      constructor() {
+        FakeSource.last = this
+      }
+    }
+    vi.stubGlobal('EventSource', FakeSource)
+    handleEvent(progress)
+    const close = connectEvents()
+    FakeSource.last.onopen?.()
+    expect(live.progress).toEqual({})
+    expect(live.version).toBe(1)
+    close()
+    vi.unstubAllGlobals()
   })
 })

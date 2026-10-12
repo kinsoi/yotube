@@ -56,8 +56,13 @@
 <style>
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(160px, 100%), 1fr));
     gap: 24px;
+  }
+  @media (max-width: 560px) {
+    .grid {
+      gap: 14px;
+    }
   }
   .empty {
     display: grid;

@@ -1,5 +1,8 @@
 {
-  "nav": { "library": "Mes playlists", "settings": "Réglages" },
+  "nav": {
+    "library": "Mes playlists",
+    "settings": "Réglages"
+  },
   "common": {
     "loading": "Chargement…",
     "cancel": "Annuler",
@@ -27,7 +30,10 @@
     "running": "Synchro en cours…",
     "never": "Pas encore synchronisée"
   },
-  "badge": { "shuffle": "Aléatoire", "auto": "Synchro de nuit" },
+  "badge": {
+    "shuffle": "Aléatoire",
+    "auto": "Synchro de nuit"
+  },
   "progress": {
     "fetching": "Lecture de la playlist YouTube Music…",
     "uploading": "Envoi {current}/{total} : {title}",
@@ -106,8 +112,7 @@
     "delete": "Supprimer la playlist",
     "delete_title": "Supprimer « {title} » ?",
     "delete_text": "La playlist sera retirée de Yotube.",
-    "delete_on_yoto": "La supprimer aussi de ma bibliothèque Yoto",
-    "sync_error": "La dernière synchro a échoué : {message}"
+    "delete_on_yoto": "La supprimer aussi de ma bibliothèque Yoto"
   },
   "track": {
     "pending": "En attente",
@@ -157,5 +162,14 @@
     "validation_error": "Il manque quelque chose ou un champ est invalide.",
     "network": "Impossible de joindre Yotube. Le conteneur tourne-t-il ?",
     "generic": "Une erreur est survenue."
+  },
+  "sync_errors": {
+    "auth_required": "Yotube n'est pas connecté à Yoto. Connecte-le dans les Réglages.",
+    "interrupted": "La synchro a été interrompue (l'app a redémarré). Relance-la.",
+    "source_empty": "La playlist YouTube Music est vide, privée ou indisponible.",
+    "nothing_sent": "Aucune chanson n'a pu être envoyée sur la Yoto.",
+    "yoto_error": "Yoto ne répond pas. Réessaie plus tard.",
+    "youtube_error": "YouTube ne répond pas. Réessaie plus tard.",
+    "unknown": "La dernière synchro a échoué : {message}"
   }
 }

@@ -15,6 +15,8 @@
   <div class="cover">
     {#if playlist.cover_url}
       <img src={playlist.cover_url} alt="" loading="lazy" />
+    {:else}
+      <span class="note" aria-hidden="true">♪</span>
     {/if}
     {#if playlist.icon_urls.length}
       <div class="icons">
@@ -56,7 +58,7 @@
     border-radius: var(--radius-lg);
     box-shadow: 0 6px 0 var(--card);
     overflow: hidden;
-    aspect-ratio: 54 / 86;
+    min-width: 0;
     transition: transform 0.15s ease;
   }
   .yoto-card:hover {
@@ -68,6 +70,12 @@
     background: var(--card);
     display: grid;
     place-items: center;
+  }
+  .note {
+    font-size: 4rem;
+    line-height: 1;
+    color: #fff;
+    opacity: 0.4;
   }
   .cover img {
     width: 100%;
@@ -88,6 +96,7 @@
     padding: 14px 16px 16px;
   }
   h2 {
+    overflow-wrap: anywhere;
     font-size: 1.1rem;
     line-height: 1.2;
   }

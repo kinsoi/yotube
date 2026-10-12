@@ -48,6 +48,7 @@ export interface PlaylistSummary {
   last_sync_at: string | null
   last_sync_status: SyncStatus | null
   last_sync_error: string | null
+  last_sync_error_code: string | null
   track_count: number
   syncing: boolean
   icon_urls: string[]

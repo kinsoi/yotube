@@ -62,8 +62,9 @@
     z-index: 10;
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 12px 16px;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    padding: 10px 16px;
     background: color-mix(in srgb, var(--bg) 85%, transparent);
     backdrop-filter: blur(10px);
     border-bottom: 2px solid var(--border);
@@ -90,6 +91,7 @@
     display: flex;
     gap: 4px;
     margin-left: auto;
+    min-width: 0;
   }
   nav a {
     padding: 8px 14px;
@@ -106,6 +108,9 @@
     }
     nav a {
       padding: 8px 10px;
+    }
+    .topbar {
+      gap: 6px 10px;
     }
   }
 </style>

@@ -7,7 +7,7 @@
   import Toggle from '../components/Toggle.svelte'
   import TrackSearch from '../components/TrackSearch.svelte'
   import { api } from '../lib/api'
-  import { errorMessage } from '../lib/errors'
+  import { errorMessage, syncErrorMessage } from '../lib/errors'
   import { live } from '../lib/events.svelte'
   import { COLORS, formatDate, formatDuration } from '../lib/format'
   import { i18n, t } from '../lib/i18n.svelte'
@@ -76,7 +76,13 @@
     }
   }
 
-  const update = (body: PlaylistUpdate) => run(() => api.updatePlaylist(id, body))
+  async function update(body: PlaylistUpdate) {
+    if (await run(() => api.updatePlaylist(id, body))) return
+    // The controls would otherwise keep showing the value the server refused.
+    const message = error
+    await load()
+    error = message
+  }
 
   function asTrackIn(track: TrackIn): TrackIn {
     const { video_id, title, artist, duration, thumbnail_url } = track
@@ -140,7 +146,10 @@
   <section class="stack" style:--card={COLORS[playlist.color]}>
     <header class="hero panel">
       <div class="cover">
-        {#if playlist.cover_url}<img src={playlist.cover_url} alt="" />{/if}
+        {#if playlist.cover_url}<img src={playlist.cover_url} alt="" />{:else}<span
+            class="note"
+            aria-hidden="true">♪</span
+          >{/if}
       </div>
       <div class="stack info">
         <div class="row">
@@ -155,8 +164,10 @@
             : t('detail.never_synced')}
         </p>
         {#if progress}<SyncProgress {progress} />{/if}
-        {#if playlist.last_sync_status === 'error' && playlist.last_sync_error && !progress}
-          <p class="error-box">{t('detail.sync_error', { message: playlist.last_sync_error })}</p>
+        {#if playlist.last_sync_status === 'error' && !progress}
+          <p class="error-box" title={playlist.last_sync_error ?? undefined}>
+            {syncErrorMessage(playlist.last_sync_error_code, playlist.last_sync_error)}
+          </p>
         {/if}
         <div class="row">
           <button
@@ -287,13 +298,13 @@
         <div class="panel stack">
           <h2>{t('detail.settings_title')}</h2>
           <form
-            class="row rename"
+            class="rename"
             onsubmit={(event) => {
               event.preventDefault()
               if (title.trim() && title.trim() !== playlist?.title) update({ title: title.trim() })
             }}
           >
-            <label class="field grow">
+            <label class="field">
               {t('detail.rename')}
               <input class="input" maxlength="200" bind:value={title} />
             </label>
@@ -361,14 +372,17 @@
 <style>
   .hero {
     display: grid;
-    grid-template-columns: 160px 1fr;
+    grid-template-columns: 160px minmax(0, 1fr);
     gap: 24px;
     border-color: var(--card);
     box-shadow: 0 6px 0 var(--card);
   }
   @media (max-width: 640px) {
     .hero {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .cover {
+      max-width: 220px;
     }
   }
   .cover {
@@ -376,6 +390,14 @@
     border-radius: var(--radius);
     background: var(--card);
     overflow: hidden;
+    display: grid;
+    place-items: center;
+  }
+  .note {
+    font-size: 4.5rem;
+    line-height: 1;
+    color: #fff;
+    opacity: 0.4;
   }
   .cover img {
     width: 100%;
@@ -394,7 +416,7 @@
   }
   @media (max-width: 900px) {
     .layout {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
     }
   }
   .between {
@@ -448,15 +470,27 @@
     gap: 4px;
     flex-wrap: nowrap;
   }
+  @media (max-width: 560px) {
+    .tracks li {
+      flex-wrap: wrap;
+    }
+    .meta {
+      flex-basis: 120px;
+    }
+    .tools {
+      margin-left: auto;
+    }
+  }
   .tools .btn-icon {
     width: 36px;
     min-height: 36px;
   }
   .rename {
-    align-items: end;
-    flex-wrap: nowrap;
+    display: grid;
+    gap: 12px;
+    justify-items: start;
   }
-  .grow {
-    flex: 1;
+  .rename .field {
+    justify-self: stretch;
   }
 </style>

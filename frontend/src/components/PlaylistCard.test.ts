@@ -17,6 +17,7 @@ const playlist: PlaylistSummary = {
   last_sync_at: '2026-10-12T03:00:00',
   last_sync_status: 'ok',
   last_sync_error: null,
+  last_sync_error_code: null,
   track_count: 3,
   syncing: false,
   icon_urls: ['https://i/1.png'],

@@ -17,6 +17,7 @@ export function handleEvent(event: ServerEvent): void {
       }
       break
     case 'playlist_updated':
+      delete live.progress[event.playlist_id] // a lost "done" event must not leave stale progress
       live.version += 1
       break
     case 'auth_required':
@@ -29,6 +30,7 @@ export function connectEvents(): () => void {
   const source = new EventSource('/api/events')
   source.onmessage = (message) => handleEvent(JSON.parse(message.data) as ServerEvent)
   source.onopen = () => {
+    live.progress = {} // events may have been missed while disconnected
     live.version += 1 // refetch after a reconnection
   }
   return () => source.close()

@@ -1,5 +1,8 @@
 {
-  "nav": { "library": "My playlists", "settings": "Settings" },
+  "nav": {
+    "library": "My playlists",
+    "settings": "Settings"
+  },
   "common": {
     "loading": "Loading…",
     "cancel": "Cancel",
@@ -27,7 +30,10 @@
     "running": "Syncing…",
     "never": "Not synced yet"
   },
-  "badge": { "shuffle": "Shuffle", "auto": "Nightly sync" },
+  "badge": {
+    "shuffle": "Shuffle",
+    "auto": "Nightly sync"
+  },
   "progress": {
     "fetching": "Reading the YouTube Music playlist…",
     "uploading": "Sending {current}/{total}: {title}",
@@ -106,8 +112,7 @@
     "delete": "Delete playlist",
     "delete_title": "Delete “{title}”?",
     "delete_text": "The playlist will be removed from Yotube.",
-    "delete_on_yoto": "Also delete it from my Yoto library",
-    "sync_error": "The last sync failed: {message}"
+    "delete_on_yoto": "Also delete it from my Yoto library"
   },
   "track": {
     "pending": "Waiting",
@@ -157,5 +162,14 @@
     "validation_error": "Something is missing or invalid in the form.",
     "network": "Cannot reach Yotube. Is the container running?",
     "generic": "Something went wrong."
+  },
+  "sync_errors": {
+    "auth_required": "Yotube is not connected to Yoto. Connect it in Settings.",
+    "interrupted": "The sync was interrupted (the app restarted). Sync again.",
+    "source_empty": "The YouTube Music playlist is empty, private or unavailable.",
+    "nothing_sent": "No song could be sent to Yoto.",
+    "yoto_error": "Yoto did not answer. Try again later.",
+    "youtube_error": "YouTube did not answer. Try again later.",
+    "unknown": "The last sync failed: {message}"
   }
 }
