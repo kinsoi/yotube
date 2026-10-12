@@ -41,13 +41,35 @@ class Services:
     settings_store: DbSettingsStore
     icon_ai_enabled: bool
     _tasks: set[asyncio.Task[None]] = field(default_factory=set)
+    _active: set[int] = field(default_factory=set)  # playlists with a background task in flight
+    _pending: dict[int, bool] = field(default_factory=dict)  # playlist_id -> rebuild_only
 
     def start_sync(self, playlist_id: int, *, rebuild: bool = False) -> None:
-        if self.engine.is_running(playlist_id):
+        """Start a background sync; raises SyncAlreadyRunning if one is in progress."""
+        if playlist_id in self._active or self.engine.is_running(playlist_id):
             raise SyncAlreadyRunning(playlist_id)
+        self._active.add(playlist_id)
         task = asyncio.create_task(self._sync(playlist_id, rebuild))
         self._tasks.add(task)
         task.add_done_callback(self._task_done)
+
+    def request_sync(self, playlist_id: int, *, rebuild: bool = False) -> None:
+        """Like start_sync, but a request made while a sync runs is queued, not dropped.
+
+        The queued request runs once the current sync ends; a full sync wins over a rebuild.
+        """
+        try:
+            self.start_sync(playlist_id, rebuild=rebuild)
+        except SyncAlreadyRunning:
+            self._queue(playlist_id, rebuild)
+
+    def _queue(self, playlist_id: int, rebuild: bool) -> None:
+        self._pending[playlist_id] = self._pending.get(playlist_id, True) and rebuild
+
+    def _run_pending(self, playlist_id: int) -> None:
+        rebuild = self._pending.pop(playlist_id, None)
+        if rebuild is not None:
+            self.start_sync(playlist_id, rebuild=rebuild)
 
     def _task_done(self, task: asyncio.Task[None]) -> None:
         self._tasks.discard(task)
@@ -58,25 +80,36 @@ class Services:
         await run_scheduled_sync(self.sessions, self._sync_and_notify)
 
     async def _sync(self, playlist_id: int, rebuild: bool) -> None:
+        rerun = True
         try:
             if rebuild:
                 await self.engine.rebuild(playlist_id, self._publish_progress)
             else:
                 await self.engine.sync(playlist_id, self._publish_progress)
         except AuthRequired:
+            rerun = False
             self.broker.publish({"type": "auth_required"})
         except SyncAlreadyRunning:
+            self._queue(playlist_id, rebuild)  # e.g. the scheduled run is on it; it will drain
             return
+        finally:
+            self._active.discard(playlist_id)
         self.broker.publish({"type": "playlist_updated", "playlist_id": playlist_id})
+        if rerun:
+            self._run_pending(playlist_id)
+        else:
+            self._pending.pop(playlist_id, None)
 
     async def _sync_and_notify(self, playlist_id: int) -> SyncResult:
         try:
             return await self.engine.sync(playlist_id, self._publish_progress)
         except AuthRequired:
+            self._pending.pop(playlist_id, None)
             self.broker.publish({"type": "auth_required"})
             raise
         finally:
             self.broker.publish({"type": "playlist_updated", "playlist_id": playlist_id})
+            self._run_pending(playlist_id)
 
     def _publish_progress(self, progress: SyncProgress) -> None:
         self.broker.publish({"type": "progress", **progress.to_dict()})

@@ -7,6 +7,25 @@ _ID_RE = re.compile(r"^[A-Za-z0-9_-]{10,80}$")
 _HOSTS = frozenset(
     {"music.youtube.com", "www.youtube.com", "youtube.com", "m.youtube.com", "youtu.be"}
 )
+_IMAGE_HOSTS = frozenset(
+    {"i.ytimg.com", "yt3.ggpht.com", "yt3.googleusercontent.com", "lh3.googleusercontent.com"}
+)
+_IMAGE_SUFFIXES = (".googleusercontent.com", ".ytimg.com")
+
+
+def is_allowed_image_url(value: str | None) -> bool:
+    """True only for https thumbnail URLs on YouTube's image hosts (guards server-side fetches)."""
+    if not value:
+        return False
+    try:
+        parsed = urlparse(value)
+        host = parsed.hostname
+        parsed.port  # noqa: B018  (raises ValueError on a malformed port)
+    except ValueError:
+        return False
+    if parsed.scheme != "https" or not host or parsed.username or parsed.password:
+        return False
+    return host in _IMAGE_HOSTS or host.endswith(_IMAGE_SUFFIXES)
 
 
 def parse_playlist_id(value: str) -> str:

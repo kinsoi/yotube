@@ -1,4 +1,3 @@
-import contextlib
 from typing import Annotated
 
 from fastapi import APIRouter, Body, Response
@@ -21,7 +20,7 @@ from app.services import Services
 from app.sync.engine import SyncAlreadyRunning
 from app.sync.mirror import mirror_tracks
 from app.youtube.models import TrackInfo
-from app.youtube.urls import parse_playlist_id
+from app.youtube.urls import is_allowed_image_url, parse_playlist_id
 
 router = APIRouter(prefix="/api/playlists")
 
@@ -47,6 +46,7 @@ def _summary(playlist: Playlist, services: Services) -> PlaylistSummary:
         last_sync_at=playlist.last_sync_at,
         last_sync_status=playlist.last_sync_status,
         last_sync_error=playlist.last_sync_error,
+        last_sync_error_code=playlist.last_sync_error_code,
         track_count=len(playlist.tracks),
         syncing=services.engine.is_running(playlist.id),
         icon_urls=[t.icon_url for t in playlist.tracks if t.icon_url][:4],
@@ -65,9 +65,8 @@ def _infos(tracks: list[TrackIn]) -> list[TrackInfo]:
 
 
 def _start(services: Services, playlist_id: int, *, rebuild: bool = False) -> None:
-    # a running sync will pick up the latest state on its next run
-    with contextlib.suppress(SyncAlreadyRunning):
-        services.start_sync(playlist_id, rebuild=rebuild)
+    # during a running sync the request is queued and runs right after it
+    services.request_sync(playlist_id, rebuild=rebuild)
 
 
 @router.get("", response_model=list[PlaylistSummary])
@@ -95,7 +94,8 @@ async def create_playlist(body: PlaylistCreate, services: ServicesDep) -> Playli
         if body.source_type == "manual":
             mirror_tracks(playlist, _infos(body.tracks))
             playlist.cover_url = next(
-                (t.thumbnail_url for t in body.tracks if t.thumbnail_url), None
+                (t.thumbnail_url for t in body.tracks if is_allowed_image_url(t.thumbnail_url)),
+                None,
             )
         session.add(playlist)
         session.flush()

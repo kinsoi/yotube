@@ -65,6 +65,7 @@ class PlaylistSummary(BaseModel):
     last_sync_at: datetime | None
     last_sync_status: str | None
     last_sync_error: str | None
+    last_sync_error_code: str | None
     track_count: int
     syncing: bool
     icon_urls: list[str]

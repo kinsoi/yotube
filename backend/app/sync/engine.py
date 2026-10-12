@@ -17,7 +17,7 @@ from app.timeutil import utcnow
 from app.yoto.content import MAX_CHAPTERS, ContentTrack, build_content
 from app.yoto.errors import AuthRequired, ContentNotFound, YotoError
 from app.yoto.models import UploadedAudio
-from app.youtube.models import DownloadFailed, TrackUnavailable
+from app.youtube.models import DownloadFailed, PlaylistNotFound, TrackUnavailable, YouTubeError
 
 log = logging.getLogger(__name__)
 
@@ -30,7 +30,26 @@ class SyncAlreadyRunning(Exception):
 
 
 class SyncError(Exception):
-    """A sync could not complete; the message is shown to the user."""
+    """A sync could not complete; `code` lets the UI show a localized message."""
+
+    def __init__(self, message: str, code: str = "unknown") -> None:
+        super().__init__(message)
+        self.code = code
+
+
+def error_code(exc: Exception) -> str:
+    """Stable, localizable identifier for a sync failure."""
+    if isinstance(exc, SyncError):
+        return exc.code
+    if isinstance(exc, AuthRequired):
+        return "auth_required"
+    if isinstance(exc, PlaylistNotFound):
+        return "source_empty"
+    if isinstance(exc, YotoError):
+        return "yoto_error"
+    if isinstance(exc, YouTubeError):
+        return "youtube_error"
+    return "unknown"
 
 
 @dataclass(frozen=True)
@@ -99,12 +118,12 @@ class SyncEngine:
                 try:
                     result = await operation(playlist_id, progress)
                 except AuthRequired as exc:
-                    self._set_status(playlist_id, "error", str(exc))
+                    self._set_status(playlist_id, "error", str(exc), code=error_code(exc))
                     progress(SyncProgress(playlist_id, "error", message=str(exc)))
                     raise
                 except Exception as exc:
                     log.exception("Sync of playlist %s failed", playlist_id)
-                    self._set_status(playlist_id, "error", str(exc))
+                    self._set_status(playlist_id, "error", str(exc), code=error_code(exc))
                     progress(SyncProgress(playlist_id, "error", message=str(exc)))
                     return SyncResult("error", message=str(exc))
                 self._set_status(playlist_id, result.status, result.message)
@@ -122,7 +141,7 @@ class SyncEngine:
             progress(SyncProgress(playlist_id, "fetching"))
             info = await self._music.get_playlist(source_url or "")
             if not info.tracks:
-                raise SyncError("The YouTube Music playlist is empty or private")
+                raise SyncError("The YouTube Music playlist is empty or private", "source_empty")
             with self._sessions.begin() as session:
                 playlist = self._get(session, playlist_id)
                 mirror_tracks(playlist, info.tracks)
@@ -271,7 +290,7 @@ class SyncEngine:
                 for t, m in rows
             ]
         if not tracks:
-            raise SyncError("No track could be sent to Yoto")
+            raise SyncError("No track could be sent to Yoto", "nothing_sent")
         if shuffle:
             self._rng.shuffle(tracks)
 
@@ -327,7 +346,13 @@ class SyncEngine:
             )
 
     def _set_status(
-        self, playlist_id: int, status: str, error: str | None, *, touch: bool = True
+        self,
+        playlist_id: int,
+        status: str,
+        error: str | None,
+        *,
+        code: str | None = None,
+        touch: bool = True,
     ) -> None:
         with self._sessions.begin() as session:
             playlist = session.get(Playlist, playlist_id)
@@ -335,6 +360,7 @@ class SyncEngine:
                 return
             playlist.last_sync_status = status
             playlist.last_sync_error = error[:1000] if error else None
+            playlist.last_sync_error_code = code if error else None
             if touch:
                 playlist.last_sync_at = utcnow()
 
@@ -352,7 +378,11 @@ def reset_interrupted(sessions: sessionmaker[Session]) -> int:
         result = session.execute(
             update(Playlist)
             .where(Playlist.last_sync_status == "running")
-            .values(last_sync_status="error", last_sync_error=INTERRUPTED_MESSAGE)
+            .values(
+                last_sync_status="error",
+                last_sync_error=INTERRUPTED_MESSAGE,
+                last_sync_error_code="interrupted",
+            )
         )
         assert isinstance(result, CursorResult)
         return int(result.rowcount or 0)

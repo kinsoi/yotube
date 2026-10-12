@@ -153,7 +153,7 @@ async def test_upload_icon_sends_multipart_file(client) -> None:
 
 @respx.mock
 async def test_upload_cover_from_url_downloads_then_uploads(client) -> None:
-    respx.get("https://img.example.com/cover.jpg").mock(
+    respx.get("https://i.ytimg.com/vi/x/cover.jpg").mock(
         return_value=httpx.Response(200, content=b"jpeg", headers={"Content-Type": "image/jpeg"})
     )
     route = respx.post(f"{API}/media/coverImage/user/me/upload").mock(
@@ -162,7 +162,7 @@ async def test_upload_cover_from_url_downloads_then_uploads(client) -> None:
         )
     )
     assert (
-        await client.upload_cover_from_url("https://img.example.com/cover.jpg")
+        await client.upload_cover_from_url("https://i.ytimg.com/vi/x/cover.jpg")
         == "https://cdn/c1.jpg"
     )
     assert route.calls.last.request.content == b"jpeg"
@@ -206,3 +206,22 @@ async def test_save_content_validation_error_on_existing_card_is_a_yoto_error(cl
 async def test_delete_content_ignores_missing_card(client) -> None:
     respx.delete(f"{API}/content/gone").mock(return_value=httpx.Response(404))
     await client.delete_content("gone")
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "http://i.ytimg.com/vi/x/cover.jpg",
+        "https://evil.example.com/cover.jpg",
+        "https://169.254.169.254/latest/meta-data",
+        "https://i.ytimg.com.evil.com/x.jpg",
+        "https://evilytimg.com/x.jpg",
+        "https://user@evil.com/x.jpg",
+        "file:///etc/passwd",
+    ],
+)
+@respx.mock
+async def test_upload_cover_rejects_non_allowed_urls_without_a_request(client, url) -> None:
+    with pytest.raises(YotoError):
+        await client.upload_cover_from_url(url)
+    assert respx.calls.call_count == 0

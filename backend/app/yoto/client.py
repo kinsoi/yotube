@@ -8,6 +8,7 @@ import httpx
 
 from app.yoto.errors import AuthRequired, ContentNotFound, YotoError
 from app.yoto.models import Icon, UploadedAudio
+from app.youtube.urls import is_allowed_image_url
 
 log = logging.getLogger(__name__)
 
@@ -79,7 +80,9 @@ class YotoClient:
         raise YotoError("Yoto did not finish transcoding in time")
 
     async def upload_cover_from_url(self, image_url: str) -> str:
-        image = await self._http.get(image_url)
+        if not is_allowed_image_url(image_url):
+            raise YotoError("Cover image URL is not on an allowed host")
+        image = await self._http.get(image_url, follow_redirects=False)
         if image.is_error:
             raise YotoError(f"Downloading the cover image failed (HTTP {image.status_code})")
         response = await self._request(

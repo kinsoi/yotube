@@ -223,6 +223,7 @@ async def test_empty_source_fails_without_touching_yoto(
     assert len(playlist.tracks) == 3
     assert playlist.last_sync_status == "error"
     assert "empty" in (playlist.last_sync_error or "")
+    assert playlist.last_sync_error_code == "source_empty"
 
 
 async def test_private_source_playlist_fails_cleanly(engine, session_factory, music, yoto) -> None:
@@ -233,7 +234,9 @@ async def test_private_source_playlist_fails_cleanly(engine, session_factory, mu
 
     assert result.status == "error"
     assert yoto.saved == []
-    assert "Could not read playlist" in (load(session_factory, pid).last_sync_error or "")
+    playlist = load(session_factory, pid)
+    assert "Could not read playlist" in (playlist.last_sync_error or "")
+    assert playlist.last_sync_error_code == "source_empty"
 
 
 async def test_shuffle_randomizes_order_and_enables_player_shuffle(
@@ -266,7 +269,9 @@ async def test_auth_expiry_propagates_and_marks_error(engine, session_factory, y
     pid = add_playlist(session_factory)
     with pytest.raises(AuthRequired):
         await engine.sync(pid)
-    assert load(session_factory, pid).last_sync_status == "error"
+    playlist = load(session_factory, pid)
+    assert playlist.last_sync_status == "error"
+    assert playlist.last_sync_error_code == "auth_required"
     assert not engine.is_running(pid)
 
 
@@ -348,3 +353,33 @@ def test_reset_interrupted_marks_running_playlists_as_error(session_factory) -> 
     playlist = load(session_factory, pid)
     assert playlist.last_sync_status == "error"
     assert "Interrupted" in (playlist.last_sync_error or "")
+    assert playlist.last_sync_error_code == "interrupted"
+
+
+async def test_nothing_sent_sets_error_code(engine, session_factory, music) -> None:
+    music.unavailable = {"a", "b", "c"}
+    pid = add_playlist(session_factory)
+
+    result = await engine.sync(pid)
+
+    assert result.status == "error"
+    assert load(session_factory, pid).last_sync_error_code == "nothing_sent"
+
+
+async def test_success_clears_error_code(engine, session_factory) -> None:
+    pid = add_playlist(session_factory, last_sync_status="error", last_sync_error_code="yoto_error")
+    assert (await engine.sync(pid)).status == "ok"
+    assert load(session_factory, pid).last_sync_error_code is None
+
+
+async def test_yoto_failure_sets_yoto_error_code(engine, session_factory, yoto) -> None:
+    from app.yoto.errors import YotoError
+
+    async def boom(body, card_id):
+        raise YotoError("500")
+
+    yoto.save_content = boom
+    pid = add_playlist(session_factory)
+
+    assert (await engine.sync(pid)).status == "error"
+    assert load(session_factory, pid).last_sync_error_code == "yoto_error"

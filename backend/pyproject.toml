@@ -14,7 +14,7 @@ dependencies = [
   "ytmusicapi>=1.9",
   "yt-dlp[default]>=2025.10.22",
   "apscheduler>=3.10,<4",
-  "anthropic>=0.69",
+  "anthropic>=1.0",
   "sse-starlette>=2.1",
 ]
 

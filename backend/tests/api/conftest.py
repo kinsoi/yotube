@@ -92,7 +92,11 @@ def client(services, tmp_path) -> Iterator[TestClient]:
 @pytest.fixture
 def real_services(services) -> Services:
     """Services with the real start_sync (background task), unlike RecordingServices."""
-    fields = {k: getattr(services, k) for k in Services.__dataclass_fields__ if k != "_tasks"}
+    fields = {
+        k: getattr(services, k)
+        for k in Services.__dataclass_fields__
+        if k not in {"_tasks", "_active", "_pending"}
+    }
     return Services(**fields)
 
 

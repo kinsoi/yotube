@@ -26,6 +26,7 @@ class Playlist(Base):
     last_sync_at: Mapped[datetime | None]
     last_sync_status: Mapped[str | None] = mapped_column(String(16))
     last_sync_error: Mapped[str | None] = mapped_column(String(1000))
+    last_sync_error_code: Mapped[str | None] = mapped_column(String(32))
     created_at: Mapped[datetime] = mapped_column(default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(default=utcnow, onupdate=utcnow)
 
