@@ -1,0 +1,14 @@
+services:
+  yotube:
+    image: ghcr.io/kinsoi/yotube:latest
+    build: .
+    container_name: yotube
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "${PORT:-8080}:${PORT:-8080}"
+    volumes:
+      - yotube-data:/data
+
+volumes:
+  yotube-data:
