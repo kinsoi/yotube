@@ -1,7 +1,7 @@
 # Yotube — Design Spec
 
 **Date:** 2026-10-12
-**Status:** Draft, awaiting review
+**Status:** Approved
 
 ## 1. Purpose
 
@@ -37,7 +37,7 @@ run their own instance.
 | Shuffle | Per-playlist option: native Yoto `config.shuffle` (player) + reshuffled chapter order at each sync (app) |
 | Icons | Claude picks a public Yoto icon → keyword match fallback → default music-note icon; manual override |
 | UI languages | English, French, Russian; browser language by default |
-| Stack | Python 3.12 / FastAPI backend, Svelte + Vite frontend built into the image |
+| Stack | Python 3.13 / FastAPI backend, Svelte + Vite frontend built into the image |
 | Code language | English (code, comments, README; short French README section) |
 
 ### Out of scope (YAGNI)
@@ -55,7 +55,8 @@ One process inside one container:
 - **SQLite** (SQLAlchemy 2.x) in `/data/yotube.db`.
 - **APScheduler** (in-process) triggers the scheduled sync.
 - **yt-dlp** downloads the best native audio stream (m4a/opus). No ffmpeg: Yoto
-  transcodes uploads itself, which keeps the image small (~150 MB target).
+  transcodes uploads itself. yt-dlp needs a JavaScript runtime for YouTube's player
+  challenges, so the image ships Deno; target image size ~250–350 MB.
 
 ```
 yotube/
