@@ -121,6 +121,15 @@
     }
   }
 
+  // Saving the song list already pushes it to Yoto, so "Sync now" must not skip pending edits.
+  function syncNow() {
+    return draft ? saveTracks() : run(() => api.syncPlaylist(id))
+  }
+
+  function warnUnsaved(event: BeforeUnloadEvent) {
+    if (draft) event.preventDefault()
+  }
+
   async function pickIcon(icon: Icon) {
     const track = iconTrack
     if (track) await run(() => api.setTrackIcon(id, track.id, icon))
@@ -141,6 +150,8 @@
 
   const rows: (Track | DraftRow)[] = $derived(draft ?? playlist?.tracks ?? [])
 </script>
+
+<svelte:window onbeforeunload={warnUnsaved} />
 
 {#if playlist}
   <section class="stack" style:--card={COLORS[playlist.color]}>
@@ -173,7 +184,7 @@
           <button
             class="btn btn-primary"
             disabled={Boolean(progress) || playlist.syncing}
-            onclick={() => run(() => api.syncPlaylist(id))}>⟳ {t('detail.sync_now')}</button
+            onclick={syncNow}>⟳ {t('detail.sync_now')}</button
           >
           {#if playlist.shuffle && playlist.yoto_card_id}
             <button
