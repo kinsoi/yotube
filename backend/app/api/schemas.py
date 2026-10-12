@@ -11,7 +11,7 @@ class TrackIn(BaseModel):
     video_id: str = Field(min_length=1, max_length=32)
     title: str = Field(min_length=1, max_length=300)
     artist: str = Field(default="", max_length=300)
-    duration: int | None = None
+    duration: int | None = Field(default=None, ge=0)
     thumbnail_url: str | None = Field(default=None, max_length=500)
 
 

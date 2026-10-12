@@ -134,3 +134,50 @@ def test_delete_optionally_removes_yoto_content(client, services) -> None:
     assert client.delete(f"/api/playlists/{pid}?delete_on_yoto=true").status_code == 204
     assert services.yoto.deleted_cards == ["card-9"]
     assert client.get(f"/api/playlists/{pid}").status_code == 404
+
+
+def test_real_background_sync_runs_and_publishes_events(real_client, real_services) -> None:
+    events: list[dict] = []
+
+    # Subscribe before the request: the broker only delivers to live subscribers.
+    import asyncio
+
+    portal_loop = real_client.portal  # anyio blocking portal bound to the app loop
+    assert portal_loop is not None
+    queue_cm = real_services.broker.subscribe()
+    queue = portal_loop.call(queue_cm.__aenter__)
+    try:
+        response = create_manual(real_client)
+        assert response.status_code == 201
+        pid = response.json()["id"]
+
+        async def wait() -> None:
+            await asyncio.gather(*list(real_services._tasks))
+
+        portal_loop.call(wait)
+        while not queue.empty():
+            events.append(queue.get_nowait())
+    finally:
+        portal_loop.call(queue_cm.__aexit__, None, None, None)
+
+    detail = real_client.get(f"/api/playlists/{pid}").json()
+    assert detail["last_sync_status"] == "ok"
+    assert detail["yoto_card_id"]
+    types = [e["type"] for e in events]
+    assert "progress" in types
+    assert {"type": "playlist_updated", "playlist_id": pid} in events
+
+
+def test_delete_keeps_playlist_when_yoto_deletion_fails(client, services) -> None:
+    from app.yoto.errors import YotoError
+
+    async def boom(card_id: str) -> None:
+        raise YotoError("nope")
+
+    services.yoto.delete_content = boom  # type: ignore[method-assign]
+    pid = create_manual(client).json()["id"]
+    with services.sessions.begin() as session:
+        session.get(Playlist, pid).yoto_card_id = "card-9"
+    response = client.delete(f"/api/playlists/{pid}?delete_on_yoto=true")
+    assert (response.status_code, response.json()["code"]) == (502, "yoto_error")
+    assert client.get(f"/api/playlists/{pid}").status_code == 200

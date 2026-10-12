@@ -47,7 +47,12 @@ class Services:
             raise SyncAlreadyRunning(playlist_id)
         task = asyncio.create_task(self._sync(playlist_id, rebuild))
         self._tasks.add(task)
-        task.add_done_callback(self._tasks.discard)
+        task.add_done_callback(self._task_done)
+
+    def _task_done(self, task: asyncio.Task[None]) -> None:
+        self._tasks.discard(task)
+        if not task.cancelled() and (exc := task.exception()) is not None:
+            log.error("Background sync failed", exc_info=exc)
 
     async def scheduled_sync(self) -> None:
         await run_scheduled_sync(self.sessions, self._sync_and_notify)

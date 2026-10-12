@@ -1,6 +1,7 @@
 import contextlib
+from typing import Annotated
 
-from fastapi import APIRouter, Response
+from fastapi import APIRouter, Body, Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -77,7 +78,7 @@ def list_playlists(services: ServicesDep) -> list[PlaylistSummary]:
 
 
 @router.post("", response_model=PlaylistDetail, status_code=201)
-def create_playlist(body: PlaylistCreate, services: ServicesDep) -> PlaylistDetail:
+async def create_playlist(body: PlaylistCreate, services: ServicesDep) -> PlaylistDetail:
     source_url = None
     if body.source_type == "youtube":
         playlist_id = parse_playlist_id(body.source_url or "")
@@ -110,7 +111,7 @@ def get_playlist(playlist_id: int, services: ServicesDep) -> PlaylistDetail:
 
 
 @router.patch("/{playlist_id}", response_model=PlaylistDetail)
-def update_playlist(
+async def update_playlist(
     playlist_id: int, body: PlaylistUpdate, services: ServicesDep
 ) -> PlaylistDetail:
     with services.sessions.begin() as session:
@@ -144,11 +145,11 @@ async def delete_playlist(
 
 
 @router.put("/{playlist_id}/tracks", response_model=PlaylistDetail)
-def replace_tracks(
-    playlist_id: int, tracks: list[TrackIn], services: ServicesDep
+async def replace_tracks(
+    playlist_id: int,
+    tracks: Annotated[list[TrackIn], Body(min_length=1, max_length=500)],
+    services: ServicesDep,
 ) -> PlaylistDetail:
-    if not tracks:
-        raise ApiProblem(422, "validation_error", "A playlist needs at least one track")
     with services.sessions.begin() as session:
         playlist = _get(session, playlist_id)
         if playlist.source_type != "manual":
@@ -163,7 +164,7 @@ def replace_tracks(
 
 
 @router.patch("/{playlist_id}/tracks/{track_id}", response_model=TrackOut)
-def set_track_icon(
+async def set_track_icon(
     playlist_id: int,
     track_id: int,
     body: TrackIconUpdate,
@@ -182,7 +183,7 @@ def set_track_icon(
 
 
 @router.post("/{playlist_id}/sync", response_model=Accepted, status_code=202)
-def sync_playlist(playlist_id: int, services: ServicesDep) -> Accepted:
+async def sync_playlist(playlist_id: int, services: ServicesDep) -> Accepted:
     with services.sessions() as session:
         _get(session, playlist_id)
     services.start_sync(playlist_id)  # SyncAlreadyRunning -> 409
@@ -190,7 +191,7 @@ def sync_playlist(playlist_id: int, services: ServicesDep) -> Accepted:
 
 
 @router.post("/{playlist_id}/reshuffle", response_model=Accepted, status_code=202)
-def reshuffle_playlist(playlist_id: int, services: ServicesDep) -> Accepted:
+async def reshuffle_playlist(playlist_id: int, services: ServicesDep) -> Accepted:
     with services.sessions() as session:
         if _get(session, playlist_id).yoto_card_id is None:
             raise ApiProblem(409, "not_synced", "Sync the playlist once before reshuffling")

@@ -87,3 +87,17 @@ def client(services, tmp_path) -> Iterator[TestClient]:
     app = create_app(Settings(data_dir=tmp_path), services_factory=lambda _: services)
     with TestClient(app) as test_client:
         yield test_client
+
+
+@pytest.fixture
+def real_services(services) -> Services:
+    """Services with the real start_sync (background task), unlike RecordingServices."""
+    fields = {k: getattr(services, k) for k in Services.__dataclass_fields__ if k != "_tasks"}
+    return Services(**fields)
+
+
+@pytest.fixture
+def real_client(real_services, tmp_path) -> Iterator[TestClient]:
+    app = create_app(Settings(data_dir=tmp_path), services_factory=lambda _: real_services)
+    with TestClient(app) as test_client:
+        yield test_client
