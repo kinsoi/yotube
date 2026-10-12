@@ -4,6 +4,7 @@
   import { formatDuration } from '../lib/format'
   import { t } from '../lib/i18n.svelte'
   import type { TrackInfo } from '../lib/types'
+  import Thumbnail from './Thumbnail.svelte'
 
   let { selected, onadd }: { selected: Set<string>; onadd: (track: TrackInfo) => void } = $props()
 
@@ -43,9 +44,7 @@
       <ul class="results">
         {#each results as track (track.video_id)}
           <li>
-            {#if track.thumbnail_url}
-              <img src={track.thumbnail_url} alt="" width="48" height="48" loading="lazy" />
-            {/if}
+            <Thumbnail src={track.thumbnail_url} size={48} />
             <span class="meta">
               <strong>{track.title}</strong>
               <span class="muted">{track.artist} · {formatDuration(track.duration)}</span>
@@ -82,10 +81,6 @@
     padding: 8px;
     border-radius: var(--radius);
     background: var(--surface-2);
-  }
-  li img {
-    border-radius: 10px;
-    object-fit: cover;
   }
   .meta {
     display: grid;
