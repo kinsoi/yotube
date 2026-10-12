@@ -27,3 +27,10 @@ def test_settings_read_environment(monkeypatch, tmp_path: Path) -> None:
     assert settings.yoto_client_id == "abc123"
     assert settings.sync_cron == "30 2 * * *"
     assert settings.anthropic_model == "claude-haiku-5-5"
+
+
+def test_real_lifespan_starts_and_serves_auth_status(tmp_path: Path) -> None:
+    with TestClient(create_app(Settings(data_dir=tmp_path))) as client:
+        assert client.get("/api/auth/status").json() == {"configured": False, "connected": False}
+        assert client.get("/api/playlists").json() == []
+    assert (tmp_path / "yotube.db").exists()
