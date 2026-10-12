@@ -63,7 +63,7 @@ describe('errorMessage', () => {
   it('translates known codes and falls back to a generic message', () => {
     setLocale('en')
     expect(errorMessage(new ApiError(409, 'sync_running', ''))).toBe(
-      'This playlist is already syncing.',
+      'A sync is already running. Try again in a moment.',
     )
     expect(errorMessage(new ApiError(500, 'weird_code', ''))).toBe('Something went wrong.')
     expect(errorMessage(new Error('boom'))).toBe('Something went wrong.')

@@ -18,19 +18,26 @@
     PlaylistUpdate,
     Track,
     TrackIn,
-    TrackInfo,
+    TrackStatus,
   } from '../lib/types'
 
   let { id }: { id: number } = $props()
 
   let playlist = $state<PlaylistDetail | null>(null)
   let error = $state<string | null>(null)
-  let draft = $state<TrackIn[] | null>(null) // unsaved edits of a hand-picked playlist
+  type DraftRow = TrackIn & {
+    icon_url?: string | null
+    status?: TrackStatus
+    error?: string | null
+  }
+  let draft = $state<DraftRow[] | null>(null) // unsaved edits of a hand-picked playlist
   let adding = $state(false)
   let iconTrack = $state<Track | null>(null)
   let confirmDelete = $state(false)
   let deleteOnYoto = $state(false)
   let title = $state('')
+  let lastServerTitle = ''
+  let deleting = $state(false)
   let dragIndex: number | null = null
 
   const progress = $derived(live.progress[id])
@@ -43,7 +50,9 @@
   async function load() {
     try {
       playlist = await api.getPlaylist(id)
-      title = playlist.title
+      // Keep a half-typed rename: only follow the server while the input is untouched.
+      if (title === lastServerTitle) title = playlist.title
+      lastServerTitle = playlist.title
       error = null
     } catch (e) {
       error = errorMessage(e)
@@ -55,25 +64,37 @@
     load()
   })
 
-  async function run(action: () => Promise<unknown>) {
+  async function run(action: () => Promise<unknown>): Promise<boolean> {
     error = null
     try {
       await action()
       await load()
+      return true
     } catch (e) {
       error = errorMessage(e)
+      return false
     }
   }
 
   const update = (body: PlaylistUpdate) => run(() => api.updatePlaylist(id, body))
 
-  function asTrackIn(track: Track | TrackInfo): TrackIn {
+  function asTrackIn(track: TrackIn): TrackIn {
     const { video_id, title, artist, duration, thumbnail_url } = track
     return { video_id, title, artist, duration, thumbnail_url }
   }
 
-  function editTracks(change: (tracks: TrackIn[]) => TrackIn[]) {
-    draft = change(draft ?? playlist!.tracks.map(asTrackIn))
+  // Draft rows keep the display data of saved tracks so reordering does not hide icons/status.
+  function asDraftRow(track: Track): DraftRow {
+    return {
+      ...asTrackIn(track),
+      icon_url: track.icon_url,
+      status: track.status,
+      error: track.error,
+    }
+  }
+
+  function editTracks(change: (tracks: DraftRow[]) => DraftRow[]) {
+    draft = change(draft ?? playlist!.tracks.map(asDraftRow))
   }
 
   function moveTrack(from: number, to: number) {
@@ -87,10 +108,11 @@
 
   async function saveTracks() {
     if (!draft) return
-    const tracks = draft
-    await run(() => api.replaceTracks(id, tracks))
-    draft = null
-    adding = false
+    const tracks = draft.map(asTrackIn)
+    if (await run(() => api.replaceTracks(id, tracks))) {
+      draft = null
+      adding = false
+    }
   }
 
   async function pickIcon(icon: Icon) {
@@ -99,16 +121,19 @@
   }
 
   async function remove() {
+    if (deleting) return
+    deleting = true
     try {
       await api.deletePlaylist(id, deleteOnYoto)
       navigate('/')
     } catch (e) {
       error = errorMessage(e)
       confirmDelete = false
+      deleting = false
     }
   }
 
-  const rows: (Track | TrackIn)[] = $derived(draft ?? playlist?.tracks ?? [])
+  const rows: (Track | DraftRow)[] = $derived(draft ?? playlist?.tracks ?? [])
 </script>
 
 {#if playlist}
@@ -142,7 +167,7 @@
           {#if playlist.shuffle && playlist.yoto_card_id}
             <button
               class="btn"
-              disabled={Boolean(progress)}
+              disabled={Boolean(progress) || playlist.syncing}
               onclick={() => run(() => api.reshufflePlaylist(id))}
               >🔀 {t('detail.reshuffle')}</button
             >
@@ -191,11 +216,17 @@
         <ol class="tracks">
           {#each rows as track, index (`${track.video_id}-${index}`)}
             {@const saved = 'id' in track ? track : null}
+            {@const iconUrl = track.icon_url ?? null}
+            {@const trackStatus = track.status ?? null}
             <li
               draggable={manual}
-              ondragstart={() => (dragIndex = index)}
+              ondragstart={(event) => {
+                dragIndex = index
+                event.dataTransfer?.setData('text/plain', String(index))
+              }}
               ondragover={(event) => manual && event.preventDefault()}
-              ondrop={() => {
+              ondrop={(event) => {
+                event.preventDefault()
                 if (dragIndex !== null && dragIndex !== index) moveTrack(dragIndex, index)
                 dragIndex = null
               }}
@@ -208,10 +239,10 @@
                   aria-label={t('detail.change_icon')}
                   onclick={() => (iconTrack = saved)}
                 >
-                  <PixelIcon src={saved.icon_url} size={32} />
+                  <PixelIcon src={iconUrl} size={32} />
                 </button>
               {:else}
-                <PixelIcon src={null} size={32} />
+                <PixelIcon src={iconUrl} size={32} />
               {/if}
               <span class="meta">
                 <strong>{track.title}</strong>
@@ -219,9 +250,9 @@
                   >{track.artist ?? ''} · {formatDuration(track.duration ?? null)}</span
                 >
               </span>
-              {#if saved && saved.status !== 'uploaded'}
-                <span class="chip status-{saved.status}" title={saved.error ?? ''}
-                  >{t(`track.${saved.status}`)}</span
+              {#if trackStatus && trackStatus !== 'uploaded'}
+                <span class="chip status-{trackStatus}" title={track.error ?? ''}
+                  >{t(`track.${trackStatus}`)}</span
                 >
               {/if}
               {#if manual}
@@ -304,7 +335,9 @@
               <button class="btn" onclick={() => (confirmDelete = false)}
                 >{t('common.cancel')}</button
               >
-              <button class="btn btn-danger" onclick={remove}>{t('common.delete')}</button>
+              <button class="btn btn-danger" disabled={deleting} onclick={remove}
+                >{t('common.delete')}</button
+              >
             </div>
           {:else}
             <button class="btn btn-danger" onclick={() => (confirmDelete = true)}

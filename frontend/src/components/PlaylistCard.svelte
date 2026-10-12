@@ -29,8 +29,16 @@
     <p class="muted count">{tn('library.tracks', playlist.track_count)}</p>
     <div class="row badges">
       <StatusBadge {status} />
-      {#if playlist.shuffle}<span class="chip" title={t('badge.shuffle')}>🔀</span>{/if}
-      {#if playlist.auto_sync}<span class="chip" title={t('badge.auto')}>🌙</span>{/if}
+      {#if playlist.shuffle}<span
+          class="chip"
+          title={t('badge.shuffle')}
+          aria-label={t('badge.shuffle')}>🔀</span
+        >{/if}
+      {#if playlist.auto_sync}<span
+          class="chip"
+          title={t('badge.auto')}
+          aria-label={t('badge.auto')}>🌙</span
+        >{/if}
     </div>
     {#if progress}
       <SyncProgress {progress} compact />

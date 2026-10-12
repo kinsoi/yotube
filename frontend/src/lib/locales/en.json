@@ -149,7 +149,7 @@
     "not_found": "Not found.",
     "auth_required": "Please connect Yotube to your Yoto account first.",
     "not_configured": "Yoto is not configured yet (YOTO_CLIENT_ID is missing).",
-    "sync_running": "This playlist is already syncing.",
+    "sync_running": "A sync is already running. Try again in a moment.",
     "not_manual": "Songs of an imported playlist are managed in YouTube Music.",
     "not_synced": "Sync the playlist once first.",
     "youtube_error": "YouTube Music did not answer. Try again in a moment.",

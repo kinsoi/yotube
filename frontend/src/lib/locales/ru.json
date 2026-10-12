@@ -149,7 +149,7 @@
     "not_found": "Не найдено.",
     "auth_required": "Сначала подключите Yotube к аккаунту Yoto.",
     "not_configured": "Yoto ещё не настроен (нет YOTO_CLIENT_ID).",
-    "sync_running": "Этот плейлист уже синхронизируется.",
+    "sync_running": "Синхронизация уже идёт. Попробуйте чуть позже.",
     "not_manual": "Песни импортированного плейлиста меняются в YouTube Music.",
     "not_synced": "Сначала синхронизируйте плейлист.",
     "youtube_error": "YouTube Music не отвечает. Попробуйте чуть позже.",

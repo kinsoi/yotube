@@ -31,15 +31,20 @@
     event.preventDefault()
     busy = true
     error = null
+    const previousTitle = preview?.title
     preview = null
     try {
       preview = await api.previewPlaylist(url.trim())
-      title = preview.title
+      if (!title.trim() || title === previousTitle) title = preview.title
     } catch (e) {
       error = errorMessage(e)
     } finally {
       busy = false
     }
+  }
+
+  function resetPreview() {
+    preview = null
   }
 
   function move(index: number, delta: number) {
@@ -111,6 +116,7 @@
             required
             placeholder={t('new.url_placeholder')}
             bind:value={url}
+            oninput={resetPreview}
           />
         </label>
         <div><button class="btn" disabled={busy || !url.trim()}>{t('new.preview')}</button></div>

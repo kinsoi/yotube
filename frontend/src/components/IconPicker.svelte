@@ -23,11 +23,12 @@
     loading = true
     error = null
     try {
-      icons = await api.searchIcons(text)
+      const found = await api.searchIcons(text)
+      if (text === query) icons = found // ignore stale responses
     } catch (e) {
-      error = errorMessage(e)
+      if (text === query) error = errorMessage(e)
     } finally {
-      loading = false
+      if (text === query) loading = false
     }
   }
 
@@ -44,9 +45,9 @@
   })
 </script>
 
-<dialog bind:this={dialog} {onclose} class="panel">
+<dialog bind:this={dialog} {onclose} class="panel" aria-labelledby="icon-picker-title">
   <div class="row head">
-    <h2>{t('icons.title')}</h2>
+    <h2 id="icon-picker-title">{t('icons.title')}</h2>
     <button class="btn btn-icon" onclick={() => dialog.close()} aria-label={t('common.close')}
       >✕</button
     >
@@ -82,7 +83,7 @@
 </dialog>
 
 <style>
-  dialog {
+  dialog[open] {
     width: min(560px, calc(100vw - 32px));
     max-height: min(640px, calc(100vh - 64px));
     display: grid;
