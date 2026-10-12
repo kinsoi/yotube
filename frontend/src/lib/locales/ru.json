@@ -1,0 +1,161 @@
+{
+  "nav": { "library": "Мои плейлисты", "settings": "Настройки" },
+  "common": {
+    "loading": "Загрузка…",
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "delete": "Удалить",
+    "close": "Закрыть",
+    "retry": "Повторить"
+  },
+  "library": {
+    "title": "Мои плейлисты",
+    "new": "Новый плейлист",
+    "empty_title": "Плейлистов пока нет",
+    "empty_text": "Импортируйте плейлист YouTube Music или выберите песни по одной — они появятся в вашей библиотеке Yoto.",
+    "tracks": {
+      "one": "{count} трек",
+      "few": "{count} трека",
+      "many": "{count} треков",
+      "other": "{count} трека"
+    }
+  },
+  "status": {
+    "ok": "Синхронизирован",
+    "partial": "Синхронизирован с ошибками",
+    "error": "Ошибка синхронизации",
+    "running": "Синхронизация…",
+    "never": "Ещё не синхронизирован"
+  },
+  "badge": { "shuffle": "Перемешивание", "auto": "Ночная синхронизация" },
+  "progress": {
+    "fetching": "Читаем плейлист YouTube Music…",
+    "uploading": "Отправка {current}/{total}: {title}",
+    "icons": "Подбор иконок {current}/{total}",
+    "saving": "Обновляем плейлист Yoto…",
+    "done": "Готово!",
+    "error": "Ошибка синхронизации"
+  },
+  "new": {
+    "title": "Новый плейлист",
+    "tab_import": "Импортировать плейлист",
+    "tab_compose": "Выбрать песни",
+    "url_label": "Ссылка на плейлист YouTube Music",
+    "url_placeholder": "https://music.youtube.com/playlist?list=…",
+    "preview": "Просмотр",
+    "preview_tracks": {
+      "one": "Найден {count} трек",
+      "few": "Найдено {count} трека",
+      "many": "Найдено {count} треков",
+      "other": "Найдено {count} трека"
+    },
+    "name_label": "Название плейлиста",
+    "create": "Создать и отправить на Yoto",
+    "creating": "Создаём…",
+    "basket_title": "Ваш выбор",
+    "basket_empty": "Найдите песни и добавьте их сюда.",
+    "remove": "Убрать",
+    "move_up": "Выше",
+    "move_down": "Ниже",
+    "options": "Параметры"
+  },
+  "search": {
+    "placeholder": "Найти песню или исполнителя",
+    "button": "Найти",
+    "add": "Добавить",
+    "added": "Добавлено",
+    "no_results": "Ничего не найдено."
+  },
+  "options": {
+    "shuffle": "Перемешивание",
+    "shuffle_help": "Плеер перемешивает песни при каждом запуске карты, а порядок в приложении меняется при каждой синхронизации.",
+    "auto_sync": "Ночная синхронизация",
+    "auto_sync_help": "Автоматически обновлять плейлист из YouTube Music каждую ночь.",
+    "color": "Цвет"
+  },
+  "colors": {
+    "orange": "Оранжевый",
+    "yellow": "Жёлтый",
+    "blue": "Синий",
+    "green": "Зелёный",
+    "pink": "Розовый",
+    "purple": "Фиолетовый",
+    "red": "Красный",
+    "teal": "Бирюзовый"
+  },
+  "detail": {
+    "sync_now": "Синхронизировать",
+    "reshuffle": "Перемешать заново",
+    "last_sync": "Последняя синхронизация: {date}",
+    "never_synced": "Ещё не синхронизирован",
+    "source_youtube": "Из YouTube Music",
+    "source_manual": "Песни, выбранные вручную",
+    "open_source": "Открыть в YouTube Music",
+    "tracks_title": "Песни",
+    "add_songs": "Добавить песни",
+    "done_adding": "Готово",
+    "save_order": "Сохранить изменения",
+    "order_changed": "В списке песен есть несохранённые изменения.",
+    "change_icon": "Сменить иконку",
+    "remove_track": "Убрать песню",
+    "over_limit": "Плейлист Yoto вмещает не больше 100 песен: на Yoto только первые 100.",
+    "settings_title": "Настройки плейлиста",
+    "rename": "Название",
+    "card_title": "Слушать с карты",
+    "card_steps": "В приложении Yoto откройте «Make Your Own», выберите этот плейлист и привяжите его к пустой карте. Карта всегда следует за плейлистом, даже после синхронизации.",
+    "delete": "Удалить плейлист",
+    "delete_title": "Удалить «{title}»?",
+    "delete_text": "Плейлист будет удалён из Yotube.",
+    "delete_on_yoto": "Удалить его и из моей библиотеки Yoto",
+    "sync_error": "Последняя синхронизация не удалась: {message}"
+  },
+  "track": {
+    "pending": "В очереди",
+    "uploaded": "На Yoto",
+    "unavailable": "Недоступно на YouTube",
+    "error": "Ошибка"
+  },
+  "icons": {
+    "title": "Выберите иконку",
+    "search_placeholder": "Поиск иконок: лев, поезд, звезда…",
+    "none": "Иконки не найдены.",
+    "loading": "Загружаем иконки…"
+  },
+  "settings": {
+    "title": "Настройки",
+    "yoto_title": "Аккаунт Yoto",
+    "connected": "Подключено к Yoto",
+    "disconnected": "Не подключено",
+    "connect": "Подключиться к Yoto",
+    "disconnect": "Отключиться",
+    "not_configured": "Не задан YOTO_CLIENT_ID. Создайте приложение на dashboard.yoto.dev и добавьте его client ID в файл .env (см. README).",
+    "language": "Язык",
+    "schedule_title": "Ночная синхронизация",
+    "schedule_text": "Расписание: {cron} ({timezone}). Чтобы изменить, поправьте SYNC_CRON в файле .env.",
+    "icon_ai_title": "Умные иконки",
+    "icon_ai_on": "Claude подбирает иконку для каждой песни.",
+    "icon_ai_off": "Иконки подбираются по названиям песен. Добавьте ANTHROPIC_API_KEY в файл .env для более точного подбора.",
+    "auth_ok": "Подключено к Yoto!",
+    "auth_error": "Не удалось войти в Yoto. Попробуйте ещё раз.",
+    "lan_note": "Входите в Yoto с компьютера, на котором запущен Yotube (вход Yoto возвращает на localhost)."
+  },
+  "banner": {
+    "text": "Yotube не подключён к вашему аккаунту Yoto.",
+    "action": "Подключить"
+  },
+  "errors": {
+    "invalid_playlist_url": "Это не похоже на ссылку на плейлист YouTube Music.",
+    "playlist_not_found": "Не удалось прочитать плейлист. Он открыт или доступен по ссылке?",
+    "not_found": "Не найдено.",
+    "auth_required": "Сначала подключите Yotube к аккаунту Yoto.",
+    "not_configured": "Yoto ещё не настроен (нет YOTO_CLIENT_ID).",
+    "sync_running": "Этот плейлист уже синхронизируется.",
+    "not_manual": "Песни импортированного плейлиста меняются в YouTube Music.",
+    "not_synced": "Сначала синхронизируйте плейлист.",
+    "youtube_error": "YouTube Music не отвечает. Попробуйте чуть позже.",
+    "yoto_error": "Yoto не отвечает. Попробуйте чуть позже.",
+    "validation_error": "Чего-то не хватает или поле заполнено неверно.",
+    "network": "Нет связи с Yotube. Контейнер запущен?",
+    "generic": "Что-то пошло не так."
+  }
+}

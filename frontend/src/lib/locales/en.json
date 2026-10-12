@@ -1,0 +1,161 @@
+{
+  "nav": { "library": "My playlists", "settings": "Settings" },
+  "common": {
+    "loading": "Loading…",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "close": "Close",
+    "retry": "Try again"
+  },
+  "library": {
+    "title": "My playlists",
+    "new": "New playlist",
+    "empty_title": "No playlist yet",
+    "empty_text": "Import a YouTube Music playlist or pick songs one by one, and they will land in your Yoto library.",
+    "tracks": {
+      "one": "{count} track",
+      "few": "{count} tracks",
+      "many": "{count} tracks",
+      "other": "{count} tracks"
+    }
+  },
+  "status": {
+    "ok": "Synced",
+    "partial": "Synced with issues",
+    "error": "Sync failed",
+    "running": "Syncing…",
+    "never": "Not synced yet"
+  },
+  "badge": { "shuffle": "Shuffle", "auto": "Nightly sync" },
+  "progress": {
+    "fetching": "Reading the YouTube Music playlist…",
+    "uploading": "Sending {current}/{total}: {title}",
+    "icons": "Choosing icons {current}/{total}",
+    "saving": "Updating the Yoto playlist…",
+    "done": "Done!",
+    "error": "Sync failed"
+  },
+  "new": {
+    "title": "New playlist",
+    "tab_import": "Import a playlist",
+    "tab_compose": "Pick songs",
+    "url_label": "YouTube Music playlist link",
+    "url_placeholder": "https://music.youtube.com/playlist?list=…",
+    "preview": "Preview",
+    "preview_tracks": {
+      "one": "{count} track found",
+      "few": "{count} tracks found",
+      "many": "{count} tracks found",
+      "other": "{count} tracks found"
+    },
+    "name_label": "Playlist name",
+    "create": "Create and send to Yoto",
+    "creating": "Creating…",
+    "basket_title": "Your selection",
+    "basket_empty": "Search for songs and add them here.",
+    "remove": "Remove",
+    "move_up": "Move up",
+    "move_down": "Move down",
+    "options": "Options"
+  },
+  "search": {
+    "placeholder": "Search a song or an artist",
+    "button": "Search",
+    "add": "Add",
+    "added": "Added",
+    "no_results": "No song found."
+  },
+  "options": {
+    "shuffle": "Shuffle",
+    "shuffle_help": "The player shuffles the songs every time the card is played, and the order in the app changes at every sync.",
+    "auto_sync": "Nightly sync",
+    "auto_sync_help": "Follow the YouTube Music playlist automatically every night.",
+    "color": "Colour"
+  },
+  "colors": {
+    "orange": "Orange",
+    "yellow": "Yellow",
+    "blue": "Blue",
+    "green": "Green",
+    "pink": "Pink",
+    "purple": "Purple",
+    "red": "Red",
+    "teal": "Teal"
+  },
+  "detail": {
+    "sync_now": "Sync now",
+    "reshuffle": "Reshuffle",
+    "last_sync": "Last sync: {date}",
+    "never_synced": "Never synced",
+    "source_youtube": "From YouTube Music",
+    "source_manual": "Hand-picked songs",
+    "open_source": "Open in YouTube Music",
+    "tracks_title": "Songs",
+    "add_songs": "Add songs",
+    "done_adding": "Done",
+    "save_order": "Save changes",
+    "order_changed": "You have unsaved changes to the song list.",
+    "change_icon": "Change icon",
+    "remove_track": "Remove song",
+    "over_limit": "Yoto playlists hold up to 100 songs: only the first 100 are on your Yoto.",
+    "settings_title": "Playlist settings",
+    "rename": "Name",
+    "card_title": "Play it with a card",
+    "card_steps": "In the Yoto app, open “Make Your Own”, choose this playlist and link it to a blank card. The card always follows the playlist, even after a sync.",
+    "delete": "Delete playlist",
+    "delete_title": "Delete “{title}”?",
+    "delete_text": "The playlist will be removed from Yotube.",
+    "delete_on_yoto": "Also delete it from my Yoto library",
+    "sync_error": "The last sync failed: {message}"
+  },
+  "track": {
+    "pending": "Waiting",
+    "uploaded": "On Yoto",
+    "unavailable": "Unavailable on YouTube",
+    "error": "Failed"
+  },
+  "icons": {
+    "title": "Choose an icon",
+    "search_placeholder": "Search icons: lion, train, star…",
+    "none": "No icon found.",
+    "loading": "Loading icons…"
+  },
+  "settings": {
+    "title": "Settings",
+    "yoto_title": "Yoto account",
+    "connected": "Connected to Yoto",
+    "disconnected": "Not connected",
+    "connect": "Connect to Yoto",
+    "disconnect": "Disconnect",
+    "not_configured": "YOTO_CLIENT_ID is missing. Create an app on dashboard.yoto.dev and add its client ID to your .env file (see the README).",
+    "language": "Language",
+    "schedule_title": "Nightly sync",
+    "schedule_text": "Schedule: {cron} ({timezone}). Change SYNC_CRON in your .env file to adjust it.",
+    "icon_ai_title": "Smart icons",
+    "icon_ai_on": "Claude chooses an icon for each song.",
+    "icon_ai_off": "Icons are matched from song titles. Add ANTHROPIC_API_KEY to your .env file for smarter icons.",
+    "auth_ok": "Connected to Yoto!",
+    "auth_error": "The Yoto login did not work. Please try again.",
+    "lan_note": "Log in to Yoto from the computer running Yotube (the Yoto login sends you back to localhost)."
+  },
+  "banner": {
+    "text": "Yotube is not connected to your Yoto account.",
+    "action": "Connect"
+  },
+  "errors": {
+    "invalid_playlist_url": "This doesn't look like a YouTube Music playlist link.",
+    "playlist_not_found": "This playlist could not be read. Is it public or unlisted?",
+    "not_found": "Not found.",
+    "auth_required": "Please connect Yotube to your Yoto account first.",
+    "not_configured": "Yoto is not configured yet (YOTO_CLIENT_ID is missing).",
+    "sync_running": "This playlist is already syncing.",
+    "not_manual": "Songs of an imported playlist are managed in YouTube Music.",
+    "not_synced": "Sync the playlist once first.",
+    "youtube_error": "YouTube Music did not answer. Try again in a moment.",
+    "yoto_error": "Yoto did not answer. Try again in a moment.",
+    "validation_error": "Something is missing or invalid in the form.",
+    "network": "Cannot reach Yotube. Is the container running?",
+    "generic": "Something went wrong."
+  }
+}

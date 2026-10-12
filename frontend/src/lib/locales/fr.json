@@ -1,0 +1,161 @@
+{
+  "nav": { "library": "Mes playlists", "settings": "Réglages" },
+  "common": {
+    "loading": "Chargement…",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "close": "Fermer",
+    "retry": "Réessayer"
+  },
+  "library": {
+    "title": "Mes playlists",
+    "new": "Nouvelle playlist",
+    "empty_title": "Pas encore de playlist",
+    "empty_text": "Importe une playlist YouTube Music ou choisis des chansons une par une : elles arriveront dans ta bibliothèque Yoto.",
+    "tracks": {
+      "one": "{count} piste",
+      "few": "{count} pistes",
+      "many": "{count} pistes",
+      "other": "{count} pistes"
+    }
+  },
+  "status": {
+    "ok": "Synchronisée",
+    "partial": "Synchronisée avec des soucis",
+    "error": "Échec de la synchro",
+    "running": "Synchro en cours…",
+    "never": "Pas encore synchronisée"
+  },
+  "badge": { "shuffle": "Aléatoire", "auto": "Synchro de nuit" },
+  "progress": {
+    "fetching": "Lecture de la playlist YouTube Music…",
+    "uploading": "Envoi {current}/{total} : {title}",
+    "icons": "Choix des icônes {current}/{total}",
+    "saving": "Mise à jour de la playlist Yoto…",
+    "done": "Terminé !",
+    "error": "Échec de la synchro"
+  },
+  "new": {
+    "title": "Nouvelle playlist",
+    "tab_import": "Importer une playlist",
+    "tab_compose": "Choisir des chansons",
+    "url_label": "Lien de la playlist YouTube Music",
+    "url_placeholder": "https://music.youtube.com/playlist?list=…",
+    "preview": "Aperçu",
+    "preview_tracks": {
+      "one": "{count} piste trouvée",
+      "few": "{count} pistes trouvées",
+      "many": "{count} pistes trouvées",
+      "other": "{count} pistes trouvées"
+    },
+    "name_label": "Nom de la playlist",
+    "create": "Créer et envoyer sur la Yoto",
+    "creating": "Création…",
+    "basket_title": "Ta sélection",
+    "basket_empty": "Cherche des chansons et ajoute-les ici.",
+    "remove": "Retirer",
+    "move_up": "Monter",
+    "move_down": "Descendre",
+    "options": "Options"
+  },
+  "search": {
+    "placeholder": "Chercher une chanson ou un artiste",
+    "button": "Chercher",
+    "add": "Ajouter",
+    "added": "Ajoutée",
+    "no_results": "Aucune chanson trouvée."
+  },
+  "options": {
+    "shuffle": "Lecture aléatoire",
+    "shuffle_help": "Le lecteur mélange les chansons à chaque fois que la carte est jouée, et l'ordre dans l'app change à chaque synchro.",
+    "auto_sync": "Synchro de nuit",
+    "auto_sync_help": "Suivre automatiquement la playlist YouTube Music chaque nuit.",
+    "color": "Couleur"
+  },
+  "colors": {
+    "orange": "Orange",
+    "yellow": "Jaune",
+    "blue": "Bleu",
+    "green": "Vert",
+    "pink": "Rose",
+    "purple": "Violet",
+    "red": "Rouge",
+    "teal": "Turquoise"
+  },
+  "detail": {
+    "sync_now": "Synchroniser",
+    "reshuffle": "Remélanger",
+    "last_sync": "Dernière synchro : {date}",
+    "never_synced": "Jamais synchronisée",
+    "source_youtube": "Depuis YouTube Music",
+    "source_manual": "Chansons choisies à la main",
+    "open_source": "Ouvrir dans YouTube Music",
+    "tracks_title": "Chansons",
+    "add_songs": "Ajouter des chansons",
+    "done_adding": "Terminé",
+    "save_order": "Enregistrer les changements",
+    "order_changed": "Tu as des changements non enregistrés dans la liste.",
+    "change_icon": "Changer l'icône",
+    "remove_track": "Retirer la chanson",
+    "over_limit": "Une playlist Yoto contient au maximum 100 chansons : seules les 100 premières sont sur ta Yoto.",
+    "settings_title": "Réglages de la playlist",
+    "rename": "Nom",
+    "card_title": "La lire avec une carte",
+    "card_steps": "Dans l'app Yoto, ouvre « Make Your Own », choisis cette playlist et associe-la à une carte vierge. La carte suit toujours la playlist, même après une synchro.",
+    "delete": "Supprimer la playlist",
+    "delete_title": "Supprimer « {title} » ?",
+    "delete_text": "La playlist sera retirée de Yotube.",
+    "delete_on_yoto": "La supprimer aussi de ma bibliothèque Yoto",
+    "sync_error": "La dernière synchro a échoué : {message}"
+  },
+  "track": {
+    "pending": "En attente",
+    "uploaded": "Sur la Yoto",
+    "unavailable": "Indisponible sur YouTube",
+    "error": "Échec"
+  },
+  "icons": {
+    "title": "Choisir une icône",
+    "search_placeholder": "Chercher une icône : lion, train, étoile…",
+    "none": "Aucune icône trouvée.",
+    "loading": "Chargement des icônes…"
+  },
+  "settings": {
+    "title": "Réglages",
+    "yoto_title": "Compte Yoto",
+    "connected": "Connecté à Yoto",
+    "disconnected": "Non connecté",
+    "connect": "Se connecter à Yoto",
+    "disconnect": "Se déconnecter",
+    "not_configured": "YOTO_CLIENT_ID est manquant. Crée une app sur dashboard.yoto.dev et ajoute son client ID dans ton fichier .env (voir le README).",
+    "language": "Langue",
+    "schedule_title": "Synchro de nuit",
+    "schedule_text": "Planification : {cron} ({timezone}). Modifie SYNC_CRON dans ton fichier .env pour la changer.",
+    "icon_ai_title": "Icônes intelligentes",
+    "icon_ai_on": "Claude choisit une icône pour chaque chanson.",
+    "icon_ai_off": "Les icônes sont choisies d'après les titres. Ajoute ANTHROPIC_API_KEY dans ton fichier .env pour des icônes plus pertinentes.",
+    "auth_ok": "Connecté à Yoto !",
+    "auth_error": "La connexion à Yoto n'a pas fonctionné. Réessaie.",
+    "lan_note": "Connecte-toi à Yoto depuis l'ordinateur qui fait tourner Yotube (la connexion Yoto renvoie vers localhost)."
+  },
+  "banner": {
+    "text": "Yotube n'est pas connecté à ton compte Yoto.",
+    "action": "Se connecter"
+  },
+  "errors": {
+    "invalid_playlist_url": "Ce lien ne ressemble pas à une playlist YouTube Music.",
+    "playlist_not_found": "Impossible de lire cette playlist. Est-elle publique ou non répertoriée ?",
+    "not_found": "Introuvable.",
+    "auth_required": "Connecte d'abord Yotube à ton compte Yoto.",
+    "not_configured": "Yoto n'est pas encore configuré (YOTO_CLIENT_ID manquant).",
+    "sync_running": "Cette playlist est déjà en cours de synchro.",
+    "not_manual": "Les chansons d'une playlist importée se gèrent dans YouTube Music.",
+    "not_synced": "Synchronise d'abord la playlist une fois.",
+    "youtube_error": "YouTube Music ne répond pas. Réessaie dans un instant.",
+    "yoto_error": "Yoto ne répond pas. Réessaie dans un instant.",
+    "validation_error": "Il manque quelque chose ou un champ est invalide.",
+    "network": "Impossible de joindre Yotube. Le conteneur tourne-t-il ?",
+    "generic": "Une erreur est survenue."
+  }
+}
