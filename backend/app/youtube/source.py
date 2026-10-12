@@ -30,11 +30,10 @@ _UNAVAILABLE_MARKERS = (
     "video unavailable",
     "private video",
     "has been removed",
-    "not available",
-    "blocked",
+    "has been terminated",
     "copyright",
-    "terminated",
     "confirm your age",
+    "who has blocked it",
 )
 
 
@@ -99,7 +98,10 @@ class YouTubeMusicSource:
             if any(marker in message.lower() for marker in _UNAVAILABLE_MARKERS):
                 raise TrackUnavailable(message) from exc
             raise DownloadFailed(message) from exc
-        path = Path(info["requested_downloads"][0]["filepath"])
+        try:
+            path = Path(info["requested_downloads"][0]["filepath"])
+        except (KeyError, IndexError, TypeError) as exc:
+            raise DownloadFailed(f"yt-dlp returned no downloaded file for {video_id}") from exc
         mime = MIME_BY_EXTENSION.get(path.suffix.lstrip(".").lower(), "application/octet-stream")
         return DownloadedAudio(path=path, mime=mime)
 

@@ -57,6 +57,7 @@ class FakeYTMusic:
 class FakeYdl:
     error: str | None = None
     ext = "m4a"
+    empty_info = False
 
     def __init__(self, opts: dict[str, Any]) -> None:
         self.opts = opts
@@ -70,6 +71,8 @@ class FakeYdl:
     def extract_info(self, url: str, download: bool) -> dict[str, Any]:
         if FakeYdl.error:
             raise DownloadError(FakeYdl.error)
+        if FakeYdl.empty_info:
+            return {}
         path = Path(self.opts["outtmpl"].replace("%(ext)s", FakeYdl.ext))
         path.write_bytes(b"audio")
         return {"requested_downloads": [{"filepath": str(path)}]}
@@ -79,6 +82,7 @@ class FakeYdl:
 def source(tmp_path: Path) -> YouTubeMusicSource:
     FakeYdl.error = None
     FakeYdl.ext = "m4a"
+    FakeYdl.empty_info = False
     return YouTubeMusicSource(tmp_path / "tmp", ytmusic=FakeYTMusic(), ydl_factory=FakeYdl)
 
 
@@ -120,5 +124,26 @@ async def test_download_of_removed_video_raises_track_unavailable(source) -> Non
 
 async def test_other_download_errors_are_transient(source) -> None:
     FakeYdl.error = "ERROR: Unable to download webpage: <urlopen error timed out>"
+    with pytest.raises(DownloadFailed):
+        await source.download_audio("v1")
+
+
+@pytest.mark.parametrize(
+    "message",
+    [
+        "ERROR: [youtube] v1: Requested format is not available. Use --list-formats",
+        "ERROR: [youtube] v1: This video is not available",
+        "ERROR: [youtube] v1: Sign in to confirm you\u2019re not a bot",
+        "ERROR: [youtube] v1: your IP is likely being blocked by YouTube",
+    ],
+)
+async def test_transient_yt_dlp_messages_are_not_treated_as_unavailable(source, message) -> None:
+    FakeYdl.error = message
+    with pytest.raises(DownloadFailed):
+        await source.download_audio("v1")
+
+
+async def test_missing_downloaded_file_info_raises_download_failed(source) -> None:
+    FakeYdl.empty_info = True
     with pytest.raises(DownloadFailed):
         await source.download_audio("v1")
