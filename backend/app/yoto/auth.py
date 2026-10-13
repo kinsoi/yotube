@@ -14,6 +14,8 @@ from app.timeutil import utcnow
 from app.yoto.errors import AuthRequired, LoginError
 
 REFRESH_MARGIN = timedelta(seconds=60)
+LOGIN_TTL = timedelta(minutes=15)
+MAX_PENDING_LOGINS = 10
 
 
 @dataclass(frozen=True)
@@ -58,13 +60,16 @@ class YotoAuth:
         self._store = store
         self._http = http
         self._clock = clock
-        self._pending: dict[str, str] = {}  # state -> code_verifier
+        self._pending: dict[str, tuple[str, datetime]] = {}  # state -> (code_verifier, started)
         self._lock = asyncio.Lock()
 
     def authorization_url(self) -> str:
         verifier, challenge = make_pkce_pair()
         state = secrets.token_urlsafe(16)
-        self._pending[state] = verifier
+        self._prune_pending()
+        self._pending[state] = (verifier, self._clock())
+        while len(self._pending) > MAX_PENDING_LOGINS:
+            self._pending.pop(next(iter(self._pending)))
         params = {
             "audience": self.AUDIENCE,
             "scope": self.SCOPES,
@@ -77,23 +82,35 @@ class YotoAuth:
         }
         return f"{self._base}/authorize?{urlencode(params)}"
 
+    def _prune_pending(self) -> None:
+        oldest = self._clock() - LOGIN_TTL
+        for state in [s for s, (_, started) in self._pending.items() if started < oldest]:
+            del self._pending[state]
+
     async def handle_callback(self, code: str, state: str) -> None:
-        verifier = self._pending.pop(state, None)
-        if verifier is None:
+        self._prune_pending()
+        pending = self._pending.pop(state, None)
+        if pending is None:
             raise LoginError("Unknown or expired login attempt, please try again")
-        response = await self._http.post(
-            f"{self._base}/oauth/token",
-            data={
-                "grant_type": "authorization_code",
-                "client_id": self._client_id,
-                "code_verifier": verifier,
-                "code": code,
-                "redirect_uri": self._redirect_uri,
-            },
-        )
+        try:
+            response = await self._http.post(
+                f"{self._base}/oauth/token",
+                data={
+                    "grant_type": "authorization_code",
+                    "client_id": self._client_id,
+                    "code_verifier": pending[0],
+                    "code": code,
+                    "redirect_uri": self._redirect_uri,
+                },
+            )
+        except httpx.HTTPError as exc:
+            raise LoginError(f"Could not reach Yoto ({type(exc).__name__})") from exc
         if response.is_error:
             raise LoginError(f"Yoto refused the login (HTTP {response.status_code})")
-        self._store_tokens(response.json(), previous_refresh_token=None)
+        try:
+            self._store_tokens(response.json(), previous_refresh_token=None)
+        except (KeyError, TypeError, ValueError) as exc:
+            raise LoginError("Yoto returned an unexpected token response") from exc
 
     def is_connected(self) -> bool:
         return self._store.load() is not None

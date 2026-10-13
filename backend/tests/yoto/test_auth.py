@@ -171,3 +171,55 @@ def test_logout_clears_tokens() -> None:
     auth = make_auth(httpx.AsyncClient(), store)
     auth.logout()
     assert store.tokens is None and not auth.is_connected()
+
+
+def state_of(url: str) -> str:
+    return parse_qs(urlparse(url).query)["state"][0]
+
+
+def test_pending_logins_are_capped_to_the_most_recent(http) -> None:
+    auth = make_auth(http, MemoryStore())
+    states = [state_of(auth.authorization_url()) for _ in range(25)]
+    assert list(auth._pending) == states[-10:]
+
+
+def test_pending_logins_expire_after_15_minutes(http) -> None:
+    now = [NOW]
+    auth = YotoAuth(
+        "client-1", AUTH_BASE, "http://x/auth/callback", MemoryStore(), http, clock=lambda: now[0]
+    )
+    old = state_of(auth.authorization_url())
+    now[0] = NOW + timedelta(minutes=16)
+    recent = state_of(auth.authorization_url())
+    assert list(auth._pending) == [recent]
+    assert old not in auth._pending
+
+
+@respx.mock
+async def test_expired_login_state_is_refused(http) -> None:
+    route = respx.post(TOKEN_URL).mock(return_value=httpx.Response(500))
+    now = [NOW]
+    auth = YotoAuth(
+        "client-1", AUTH_BASE, "http://x/auth/callback", MemoryStore(), http, clock=lambda: now[0]
+    )
+    state = state_of(auth.authorization_url())
+    now[0] = NOW + timedelta(minutes=16)
+    with pytest.raises(LoginError):
+        await auth.handle_callback("code", state)
+    assert not route.called
+
+
+@respx.mock
+async def test_callback_network_error_is_a_login_error(http) -> None:
+    respx.post(TOKEN_URL).mock(side_effect=httpx.ConnectError("boom"))
+    auth = make_auth(http, MemoryStore())
+    with pytest.raises(LoginError):
+        await auth.handle_callback("code", state_of(auth.authorization_url()))
+
+
+@respx.mock
+async def test_callback_malformed_payload_is_a_login_error(http) -> None:
+    respx.post(TOKEN_URL).mock(return_value=httpx.Response(200, json={"refresh_token": "r1"}))
+    auth = make_auth(http, MemoryStore())
+    with pytest.raises(LoginError):
+        await auth.handle_callback("code", state_of(auth.authorization_url()))
