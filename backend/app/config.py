@@ -11,6 +11,9 @@ class Settings(BaseSettings):
 
     yoto_client_id: str = ""
     public_url: str = "http://localhost:8080"
+    # Extra host names the app answers to, comma-separated ("*" turns the check off).
+    # Local names (*.local, *.lan, *.home, *.internal), localhost and IP addresses always work.
+    allowed_hosts: str = ""
     anthropic_api_key: str = ""
     anthropic_model: str = "claude-haiku-5-5"
     sync_cron: str = "0 3 * * *"

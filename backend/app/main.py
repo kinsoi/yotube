@@ -10,6 +10,7 @@ from app.api import settings as settings_api
 from app.api.errors import register_error_handlers
 from app.config import Settings, get_settings
 from app.scheduler import create_scheduler
+from app.security import SecurityMiddleware, allowed_hosts_from
 from app.services import Services, build_services
 
 log = logging.getLogger(__name__)
@@ -43,6 +44,10 @@ def create_app(
     app = FastAPI(title="Yotube", lifespan=lifespan)
     app.state.settings = settings
     register_error_handlers(app)
+    app.add_middleware(
+        SecurityMiddleware,
+        allowed_hosts=allowed_hosts_from(settings.public_url, settings.allowed_hosts),
+    )
 
     @app.get("/api/health")
     async def health() -> dict[str, str]:

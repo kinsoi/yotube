@@ -7,7 +7,7 @@ from app.main import create_app
 
 
 def test_health_endpoint(tmp_path: Path) -> None:
-    client = TestClient(create_app(Settings(data_dir=tmp_path)))
+    client = TestClient(create_app(Settings(data_dir=tmp_path, allowed_hosts="testserver")))
     response = client.get("/api/health")
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
@@ -30,7 +30,7 @@ def test_settings_read_environment(monkeypatch, tmp_path: Path) -> None:
 
 
 def test_real_lifespan_starts_and_serves_auth_status(tmp_path: Path) -> None:
-    with TestClient(create_app(Settings(data_dir=tmp_path))) as client:
+    with TestClient(create_app(Settings(data_dir=tmp_path, allowed_hosts="testserver"))) as client:
         assert client.get("/api/auth/status").json() == {"configured": False, "connected": False}
         assert client.get("/api/playlists").json() == []
     assert (tmp_path / "yotube.db").exists()

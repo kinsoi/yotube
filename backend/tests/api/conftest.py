@@ -99,7 +99,9 @@ def services(session_factory, tmp_path, preview_http) -> RecordingServices:
 
 @pytest.fixture
 def client(services, tmp_path) -> Iterator[TestClient]:
-    app = create_app(Settings(data_dir=tmp_path), services_factory=lambda _: services)
+    app = create_app(
+        Settings(data_dir=tmp_path, allowed_hosts="testserver"), services_factory=lambda _: services
+    )
     with TestClient(app) as test_client:
         yield test_client
 
@@ -117,6 +119,9 @@ def real_services(services) -> Services:
 
 @pytest.fixture
 def real_client(real_services, tmp_path) -> Iterator[TestClient]:
-    app = create_app(Settings(data_dir=tmp_path), services_factory=lambda _: real_services)
+    app = create_app(
+        Settings(data_dir=tmp_path, allowed_hosts="testserver"),
+        services_factory=lambda _: real_services,
+    )
     with TestClient(app) as test_client:
         yield test_client
