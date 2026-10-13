@@ -26,6 +26,9 @@ MIME_BY_EXTENSION = {
     "mp3": "audio/mpeg",
 }
 
+MAX_DURATION_SECONDS = 3 * 60 * 60  # a Yoto chapter is a song or a story, not a stream
+TOO_LONG = "The video is longer than 3 hours"
+
 # yt-dlp error fragments that mean "this video will never download".
 _UNAVAILABLE_MARKERS = (
     "video unavailable",
@@ -98,8 +101,11 @@ class YouTubeMusicSource:
         options = {
             "outtmpl": str(self._tmp_dir / f"{video_id}.%(ext)s"),
             "overwrites": True,
+            "match_filter": _reject_too_long,
         }
         info = self._extract(video_id, options, download=True)
+        if _reject_too_long(info):
+            raise TrackUnavailable(f"{TOO_LONG} ({video_id})")
         try:
             path = Path(info["requested_downloads"][0]["filepath"])
         except (KeyError, IndexError, TypeError) as exc:
@@ -128,6 +134,14 @@ class YouTubeMusicSource:
                 raise TrackUnavailable(message) from exc
             raise DownloadFailed(message) from exc
         return info or {}
+
+
+def _reject_too_long(info: dict[str, Any], *, incomplete: bool = False) -> str | None:
+    """yt-dlp match_filter: skip the download of very long videos (None means accept)."""
+    duration = info.get("duration")
+    if isinstance(duration, (int, float)) and duration > MAX_DURATION_SECONDS:
+        return TOO_LONG
+    return None
 
 
 def _check_video_id(video_id: str) -> None:

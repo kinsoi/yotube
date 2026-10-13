@@ -60,6 +60,7 @@ class FakeYdl:
     error: str | None = None
     ext = "m4a"
     empty_info = False
+    duration: int | None = 200
 
     def __init__(self, opts: dict[str, Any]) -> None:
         self.opts = opts
@@ -81,9 +82,13 @@ class FakeYdl:
                 "ext": FakeYdl.ext,
                 "http_headers": {"User-Agent": "yt-dlp-ua"},
             }
+        info: dict[str, Any] = {"id": url[-11:], "duration": FakeYdl.duration}
+        match_filter = self.opts.get("match_filter")
+        if match_filter and match_filter(info, incomplete=False):
+            return info  # like yt-dlp: a filtered video is not downloaded
         path = Path(self.opts["outtmpl"].replace("%(ext)s", FakeYdl.ext))
         path.write_bytes(b"audio")
-        return {"requested_downloads": [{"filepath": str(path)}]}
+        return {**info, "requested_downloads": [{"filepath": str(path)}]}
 
 
 @pytest.fixture
@@ -91,6 +96,7 @@ def source(tmp_path: Path) -> YouTubeMusicSource:
     FakeYdl.error = None
     FakeYdl.ext = "m4a"
     FakeYdl.empty_info = False
+    FakeYdl.duration = 200
     return YouTubeMusicSource(tmp_path / "tmp", ytmusic=FakeYTMusic(), ydl_factory=FakeYdl)
 
 
@@ -189,3 +195,15 @@ async def test_invalid_video_ids_are_refused_before_yt_dlp(tmp_path, video_id) -
         await source.download_audio(video_id)
     with pytest.raises(TrackUnavailable, match="Invalid video id"):
         await source.audio_stream(video_id)
+
+
+async def test_videos_longer_than_three_hours_are_refused(source, tmp_path) -> None:
+    FakeYdl.duration = 3 * 3600 + 1
+    with pytest.raises(TrackUnavailable, match="longer than 3 hours"):
+        await source.download_audio(VID)
+    assert not (tmp_path / "tmp" / f"{VID}.m4a").exists()
+
+
+async def test_videos_up_to_three_hours_download(source) -> None:
+    FakeYdl.duration = 3 * 3600 - 1
+    assert (await source.download_audio(VID)).path.read_bytes() == b"audio"
