@@ -2,6 +2,7 @@ import type {
   AppSettings,
   AuthStatus,
   Icon,
+  IconSearch,
   PlaylistCreate,
   PlaylistDetail,
   PlaylistPreview,
@@ -72,7 +73,7 @@ export const api = {
   syncPlaylist: (id: number) => request<{ status: string }>('POST', `/api/playlists/${id}/sync`),
   reshufflePlaylist: (id: number) =>
     request<{ status: string }>('POST', `/api/playlists/${id}/reshuffle`),
-  searchIcons: (query: string) => request<Icon[]>('GET', `/api/icons?q=${q(query)}`),
+  searchIcons: (query: string) => request<IconSearch>('GET', `/api/icons?q=${q(query)}`),
   getSettings: () => request<AppSettings>('GET', '/api/settings'),
   updateSettings: (body: Pick<AppSettings, 'language'>) =>
     request<AppSettings>('PATCH', '/api/settings', body),

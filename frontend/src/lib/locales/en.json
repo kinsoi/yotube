@@ -129,6 +129,7 @@
     "title": "Choose an icon",
     "search_placeholder": "Search icons: lion, train, star…",
     "none": "No icon found.",
+    "no_match": "Nothing matches “{query}”. Pick one from the whole catalogue:",
     "loading": "Loading icons…"
   },
   "settings": {
@@ -140,6 +141,11 @@
     "disconnect": "Disconnect",
     "not_configured": "YOTO_CLIENT_ID is missing. Create an app on dashboard.yoto.dev and add its client ID to your .env file (see the README).",
     "language": "Language",
+    "theme_title": "Appearance",
+    "theme_auto": "Automatic",
+    "theme_light": "Light",
+    "theme_dark": "Dark",
+    "theme_help": "Automatic follows your device. The choice is saved in this browser.",
     "schedule_title": "Nightly sync",
     "schedule_text": "Schedule: {cron} ({timezone}). Change SYNC_CRON in your .env file to adjust it.",
     "icon_ai_title": "Smart icons",

@@ -2,6 +2,7 @@
   import { COLORS } from '../lib/format'
   import { t, tn } from '../lib/i18n.svelte'
   import type { PlaylistSummary, ProgressEvent } from '../lib/types'
+  import Glyph from './Glyph.svelte'
   import PixelIcon from './PixelIcon.svelte'
   import StatusBadge from './StatusBadge.svelte'
   import SyncProgress from './SyncProgress.svelte'
@@ -16,7 +17,7 @@
     {#if playlist.cover_url}
       <img src={playlist.cover_url} alt="" loading="lazy" />
     {:else}
-      <span class="note" aria-hidden="true">♪</span>
+      <span class="note" aria-hidden="true"><Glyph name="music" size={64} /></span>
     {/if}
     {#if playlist.icon_urls.length}
       <div class="icons">
@@ -34,12 +35,12 @@
       {#if playlist.shuffle}<span
           class="chip"
           title={t('badge.shuffle')}
-          aria-label={t('badge.shuffle')}>🔀</span
+          aria-label={t('badge.shuffle')}><Glyph name="shuffle" size={14} /></span
         >{/if}
       {#if playlist.auto_sync}<span
           class="chip"
           title={t('badge.auto')}
-          aria-label={t('badge.auto')}>🌙</span
+          aria-label={t('badge.auto')}><Glyph name="moon" size={14} /></span
         >{/if}
     </div>
     {#if progress}
@@ -72,10 +73,9 @@
     place-items: center;
   }
   .note {
-    font-size: 4rem;
-    line-height: 1;
+    display: grid;
     color: #fff;
-    opacity: 0.4;
+    opacity: 0.45;
   }
   .cover img {
     width: 100%;

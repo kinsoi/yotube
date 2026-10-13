@@ -1,5 +1,6 @@
 <script lang="ts">
   import ColorPicker from '../components/ColorPicker.svelte'
+  import Glyph from '../components/Glyph.svelte'
   import PreviewButton from '../components/PreviewButton.svelte'
   import Toggle from '../components/Toggle.svelte'
   import TrackSearch from '../components/TrackSearch.svelte'
@@ -97,10 +98,12 @@
 
   <div class="tabs" role="tablist">
     <button role="tab" aria-selected={tab === 'import'} onclick={() => (tab = 'import')}>
-      🔗 {t('new.tab_import')}
+      <Glyph name="link" size={18} />
+      {t('new.tab_import')}
     </button>
     <button role="tab" aria-selected={tab === 'compose'} onclick={() => (tab = 'compose')}>
-      🔍 {t('new.tab_compose')}
+      <Glyph name="search" size={18} />
+      {t('new.tab_compose')}
     </button>
   </div>
 
@@ -161,17 +164,18 @@
                 <button
                   class="btn btn-icon"
                   aria-label={t('new.move_up')}
-                  onclick={() => move(index, -1)}>↑</button
+                  onclick={() => move(index, -1)}><Glyph name="arrow-up" /></button
                 >
                 <button
                   class="btn btn-icon"
                   aria-label={t('new.move_down')}
-                  onclick={() => move(index, 1)}>↓</button
+                  onclick={() => move(index, 1)}><Glyph name="arrow-down" /></button
                 >
                 <button
                   class="btn btn-icon btn-danger"
                   aria-label={t('new.remove')}
-                  onclick={() => (basket = basket.filter((_, i) => i !== index))}>✕</button
+                  onclick={() => (basket = basket.filter((_, i) => i !== index))}
+                  ><Glyph name="x" /></button
                 >
               </li>
             {/each}

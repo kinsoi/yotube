@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Glyph from './Glyph.svelte'
   import { onDestroy } from 'svelte'
   import { t } from '../lib/i18n.svelte'
   import { player, stopPreview, togglePreview } from '../lib/preview.svelte'
@@ -30,11 +31,11 @@
   {#if status === 'loading'}
     <span class="spinner" aria-hidden="true"></span>
   {:else if status === 'playing'}
-    <span aria-hidden="true">■</span>
+    <Glyph name="stop" size={18} />
   {:else if status === 'error'}
-    <span aria-hidden="true">!</span>
+    <Glyph name="alert" size={20} />
   {:else}
-    <span aria-hidden="true">▶</span>
+    <Glyph name="play" size={18} />
   {/if}
 </button>
 

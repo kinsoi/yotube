@@ -23,8 +23,9 @@
   background: var(--bg);
 }
 
+/* Dark palette: when the system asks for it (unless forced light), or when forced dark. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
     --bg: #1c1612;
     --surface: #2a211b;
     --surface-2: #33281f;
@@ -33,6 +34,16 @@
     --border: #45372b;
     color-scheme: dark;
   }
+}
+
+:root[data-theme='dark'] {
+  --bg: #1c1612;
+  --surface: #2a211b;
+  --surface-2: #33281f;
+  --text: #fbefe3;
+  --muted: #bfae9e;
+  --border: #45372b;
+  color-scheme: dark;
 }
 
 * {

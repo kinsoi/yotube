@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Glyph from './Glyph.svelte'
   import { onDestroy } from 'svelte'
 
   let { src, size }: { src: string | null; size: number } = $props()
@@ -36,7 +37,9 @@
       <img {src} alt="" width={size} height={size} referrerpolicy="no-referrer" onerror={retry} />
     {/key}
   {:else}
-    <span class="note" aria-hidden="true">♪</span>
+    <span class="note" aria-hidden="true"
+      ><Glyph name="music" size={Math.round(size * 0.45)} /></span
+    >
   {/if}
 </span>
 
@@ -57,7 +60,7 @@
     object-fit: cover;
   }
   .note {
-    font-size: calc(var(--size) * 0.45);
-    opacity: 0.45;
+    display: grid;
+    opacity: 0.5;
   }
 </style>

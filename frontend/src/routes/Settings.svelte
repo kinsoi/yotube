@@ -1,9 +1,13 @@
 <script lang="ts">
+  import Glyph from '../components/Glyph.svelte'
   import { api } from '../lib/api'
   import { errorMessage } from '../lib/errors'
   import { live } from '../lib/events.svelte'
   import { i18n, LOCALE_NAMES, setLocale, t } from '../lib/i18n.svelte'
+  import { setTheme, theme, THEMES } from '../lib/theme.svelte'
   import type { AppSettings, Locale } from '../lib/types'
+
+  const THEME_GLYPHS = { auto: 'monitor', light: 'sun', dark: 'moon' } as const
 
   let { params }: { params: Record<string, string> } = $props()
 
@@ -37,7 +41,10 @@
 <section class="stack narrow">
   <div class="page-head"><h1>{t('settings.title')}</h1></div>
 
-  {#if params.auth === 'ok'}<p class="notice">✅ {t('settings.auth_ok')}</p>{/if}
+  {#if params.auth === 'ok'}<p class="notice row">
+      <Glyph name="check-circle" />
+      {t('settings.auth_ok')}
+    </p>{/if}
   {#if params.auth === 'error'}<p class="error-box">{t('settings.auth_error')}</p>{/if}
   {#if error}<p class="error-box">{error}</p>{/if}
 
@@ -70,14 +77,30 @@
     </div>
 
     <div class="panel stack">
-      <h2>🌙 {t('settings.schedule_title')}</h2>
+      <h2>{t('settings.theme_title')}</h2>
+      <div class="row" role="group" aria-label={t('settings.theme_title')}>
+        {#each THEMES as value (value)}
+          <button
+            class="btn"
+            class:btn-primary={theme.current === value}
+            aria-pressed={theme.current === value}
+            onclick={() => setTheme(value)}
+            ><Glyph name={THEME_GLYPHS[value]} size={18} /> {t(`settings.theme_${value}`)}</button
+          >
+        {/each}
+      </div>
+      <p class="muted small">{t('settings.theme_help')}</p>
+    </div>
+
+    <div class="panel stack">
+      <h2 class="row"><Glyph name="moon" /> {t('settings.schedule_title')}</h2>
       <p class="muted">
         {t('settings.schedule_text', { cron: settings.sync_cron, timezone: settings.timezone })}
       </p>
     </div>
 
     <div class="panel stack">
-      <h2>✨ {t('settings.icon_ai_title')}</h2>
+      <h2 class="row"><Glyph name="sparkles" /> {t('settings.icon_ai_title')}</h2>
       <p class="muted">
         {settings.icon_ai_enabled ? t('settings.icon_ai_on') : t('settings.icon_ai_off')}
       </p>

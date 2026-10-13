@@ -27,11 +27,11 @@ it('shows a music note once every retry failed', async () => {
   }
 
   expect(container.querySelector('img')).toBeNull()
-  expect(container.textContent).toContain('♪')
+  expect(container.querySelector('.note svg')).not.toBeNull()
 })
 
 it('shows a music note when there is no image', () => {
   const { container } = render(Thumbnail, { src: null, size: 48 })
   expect(container.querySelector('img')).toBeNull()
-  expect(container.textContent).toContain('♪')
+  expect(container.querySelector('.note svg')).not.toBeNull()
 })

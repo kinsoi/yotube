@@ -129,6 +129,7 @@
     "title": "Выберите иконку",
     "search_placeholder": "Поиск иконок: лев, поезд, звезда…",
     "none": "Иконки не найдены.",
+    "no_match": "По запросу «{query}» ничего не нашлось. Выберите из всего каталога:",
     "loading": "Загружаем иконки…"
   },
   "settings": {
@@ -140,6 +141,11 @@
     "disconnect": "Отключиться",
     "not_configured": "Не задан YOTO_CLIENT_ID. Создайте приложение на dashboard.yoto.dev и добавьте его client ID в файл .env (см. README).",
     "language": "Язык",
+    "theme_title": "Оформление",
+    "theme_auto": "Автоматически",
+    "theme_light": "Светлое",
+    "theme_dark": "Тёмное",
+    "theme_help": "«Автоматически» следует настройкам устройства. Выбор сохраняется в этом браузере.",
     "schedule_title": "Ночная синхронизация",
     "schedule_text": "Расписание: {cron} ({timezone}). Чтобы изменить, поправьте SYNC_CRON в файле .env.",
     "icon_ai_title": "Умные иконки",

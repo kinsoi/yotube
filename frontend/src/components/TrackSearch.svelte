@@ -4,6 +4,7 @@
   import { formatDuration } from '../lib/format'
   import { t } from '../lib/i18n.svelte'
   import type { TrackInfo } from '../lib/types'
+  import Glyph from './Glyph.svelte'
   import PreviewButton from './PreviewButton.svelte'
   import Thumbnail from './Thumbnail.svelte'
 
@@ -52,7 +53,7 @@
               <span class="muted">{track.artist} · {formatDuration(track.duration)}</span>
             </span>
             {#if selected.has(track.video_id)}
-              <span class="chip">✓ {t('search.added')}</span>
+              <span class="chip"><Glyph name="check" size={14} /> {t('search.added')}</span>
             {:else}
               <button class="btn" type="button" onclick={() => onadd(track)}
                 >{t('search.add')}</button

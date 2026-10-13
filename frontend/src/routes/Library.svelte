@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Glyph from '../components/Glyph.svelte'
   import PlaylistCard from '../components/PlaylistCard.svelte'
   import { api } from '../lib/api'
   import { errorMessage } from '../lib/errors'
@@ -30,7 +31,7 @@
 <section>
   <div class="page-head">
     <h1>{t('library.title')}</h1>
-    <a class="btn btn-primary" href="#/new">＋ {t('library.new')}</a>
+    <a class="btn btn-primary" href="#/new"><Glyph name="plus" /> {t('library.new')}</a>
   </div>
 
   {#if loading}
@@ -39,10 +40,10 @@
     <p class="error-box">{error}</p>
   {:else if playlists.length === 0}
     <div class="panel empty">
-      <div class="art" aria-hidden="true">🎵</div>
+      <div class="art" aria-hidden="true"><Glyph name="music" size={36} /></div>
       <h2>{t('library.empty_title')}</h2>
       <p class="muted">{t('library.empty_text')}</p>
-      <a class="btn btn-primary" href="#/new">＋ {t('library.new')}</a>
+      <a class="btn btn-primary" href="#/new"><Glyph name="plus" /> {t('library.new')}</a>
     </div>
   {:else}
     <div class="grid">
@@ -72,6 +73,13 @@
     padding: 48px 24px;
   }
   .art {
-    font-size: 3rem;
+    display: grid;
+    place-items: center;
+    width: 72px;
+    height: 72px;
+    border-radius: 22px;
+    background: var(--primary);
+    color: var(--on-primary);
+    box-shadow: 0 4px 0 var(--primary-strong);
   }
 </style>

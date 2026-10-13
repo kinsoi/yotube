@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte'
+  import Glyph from './components/Glyph.svelte'
   import LanguageSwitcher from './components/LanguageSwitcher.svelte'
   import ReconnectBanner from './components/ReconnectBanner.svelte'
   import { api } from './lib/api'
@@ -27,7 +28,7 @@
 
 <header class="topbar">
   <a class="brand" href="#/">
-    <span class="logo" aria-hidden="true">♪</span>
+    <span class="logo" aria-hidden="true"><Glyph name="music" size={22} /></span>
     Yotube
   </a>
   <nav>

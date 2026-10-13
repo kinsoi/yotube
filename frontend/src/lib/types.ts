@@ -89,6 +89,12 @@ export interface Icon {
   url: string
 }
 
+export interface IconSearch {
+  icons: Icon[]
+  /** False when nothing fits the query: `icons` is then the whole catalogue. */
+  matched: boolean
+}
+
 export interface AuthStatus {
   configured: boolean
   connected: boolean

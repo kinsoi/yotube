@@ -1,5 +1,6 @@
 <script lang="ts">
   import ColorPicker from '../components/ColorPicker.svelte'
+  import Glyph from '../components/Glyph.svelte'
   import IconPicker from '../components/IconPicker.svelte'
   import PixelIcon from '../components/PixelIcon.svelte'
   import StatusBadge from '../components/StatusBadge.svelte'
@@ -159,7 +160,7 @@
       <div class="cover">
         {#if playlist.cover_url}<img src={playlist.cover_url} alt="" />{:else}<span
             class="note"
-            aria-hidden="true">♪</span
+            aria-hidden="true"><Glyph name="music" size={72} /></span
           >{/if}
       </div>
       <div class="stack info">
@@ -184,19 +185,19 @@
           <button
             class="btn btn-primary"
             disabled={Boolean(progress) || playlist.syncing}
-            onclick={syncNow}>⟳ {t('detail.sync_now')}</button
+            onclick={syncNow}><Glyph name="sync" size={18} /> {t('detail.sync_now')}</button
           >
           {#if playlist.shuffle && playlist.yoto_card_id}
             <button
               class="btn"
               disabled={Boolean(progress) || playlist.syncing}
               onclick={() => run(() => api.reshufflePlaylist(id))}
-              >🔀 {t('detail.reshuffle')}</button
+              ><Glyph name="shuffle" size={18} /> {t('detail.reshuffle')}</button
             >
           {/if}
           {#if playlist.source_url}
             <a class="btn" href={playlist.source_url} target="_blank" rel="noreferrer"
-              >{t('detail.open_source')} ↗</a
+              >{t('detail.open_source')} <Glyph name="external" size={16} /></a
             >
           {/if}
         </div>
@@ -211,7 +212,11 @@
           <h2>{t('detail.tracks_title')} ({rows.length})</h2>
           {#if manual}
             <button class="btn" onclick={() => (adding = !adding)}>
-              {adding ? t('detail.done_adding') : `＋ ${t('detail.add_songs')}`}
+              {#if adding}<Glyph name="check" size={18} /> {t('detail.done_adding')}{:else}<Glyph
+                  name="plus"
+                  size={18}
+                />
+                {t('detail.add_songs')}{/if}
             </button>
           {/if}
         </div>
@@ -283,20 +288,20 @@
                     class="btn btn-icon"
                     aria-label={t('new.move_up')}
                     disabled={index === 0}
-                    onclick={() => moveTrack(index, index - 1)}>↑</button
+                    onclick={() => moveTrack(index, index - 1)}><Glyph name="arrow-up" /></button
                   >
                   <button
                     class="btn btn-icon"
                     aria-label={t('new.move_down')}
                     disabled={index === rows.length - 1}
-                    onclick={() => moveTrack(index, index + 1)}>↓</button
+                    onclick={() => moveTrack(index, index + 1)}><Glyph name="arrow-down" /></button
                   >
                   <button
                     class="btn btn-icon btn-danger"
                     aria-label={t('detail.remove_track')}
                     disabled={rows.length === 1}
                     onclick={() => editTracks((tracks) => tracks.filter((_, i) => i !== index))}
-                    >✕</button
+                    ><Glyph name="x" /></button
                   >
                 </span>
               {/if}
@@ -342,7 +347,7 @@
         </div>
 
         <div class="panel stack card-help">
-          <h2>💳 {t('detail.card_title')}</h2>
+          <h2 class="row"><Glyph name="card" /> {t('detail.card_title')}</h2>
           <p class="muted">{t('detail.card_steps')}</p>
         </div>
 
@@ -363,7 +368,7 @@
             </div>
           {:else}
             <button class="btn btn-danger" onclick={() => (confirmDelete = true)}
-              >🗑 {t('detail.delete')}</button
+              ><Glyph name="trash" size={18} /> {t('detail.delete')}</button
             >
           {/if}
         </div>
@@ -405,10 +410,9 @@
     place-items: center;
   }
   .note {
-    font-size: 4.5rem;
-    line-height: 1;
+    display: grid;
     color: #fff;
-    opacity: 0.4;
+    opacity: 0.45;
   }
   .cover img {
     width: 100%;

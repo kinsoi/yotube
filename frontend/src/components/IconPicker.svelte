@@ -4,6 +4,7 @@
   import { errorMessage } from '../lib/errors'
   import { t } from '../lib/i18n.svelte'
   import type { Icon } from '../lib/types'
+  import Glyph from './Glyph.svelte'
   import PixelIcon from './PixelIcon.svelte'
 
   let {
@@ -14,6 +15,8 @@
 
   let query = $state('')
   let icons = $state<Icon[]>([])
+  let matched = $state(true)
+  let searched = $state('') // query of the results on screen
   let loading = $state(true)
   let error = $state<string | null>(null)
   let dialog: HTMLDialogElement
@@ -24,7 +27,10 @@
     error = null
     try {
       const found = await api.searchIcons(text)
-      if (text === query) icons = found // ignore stale responses
+      if (text !== query) return // ignore stale responses
+      icons = found.icons
+      matched = found.matched
+      searched = text
     } catch (e) {
       if (text === query) error = errorMessage(e)
     } finally {
@@ -49,7 +55,7 @@
   <div class="row head">
     <h2 id="icon-picker-title">{t('icons.title')}</h2>
     <button class="btn btn-icon" onclick={() => dialog.close()} aria-label={t('common.close')}
-      >✕</button
+      ><Glyph name="x" /></button
     >
   </div>
   <input
@@ -65,6 +71,7 @@
   {:else if icons.length === 0}
     <p class="muted">{t('icons.none')}</p>
   {:else}
+    {#if !matched}<p class="notice">{t('icons.no_match', { query: searched })}</p>{/if}
     <div class="grid">
       {#each icons as icon (icon.media_id)}
         <button

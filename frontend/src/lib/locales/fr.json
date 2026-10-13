@@ -129,6 +129,7 @@
     "title": "Choisir une icône",
     "search_placeholder": "Chercher une icône : lion, train, étoile…",
     "none": "Aucune icône trouvée.",
+    "no_match": "Rien ne correspond à « {query} ». Choisis dans tout le catalogue :",
     "loading": "Chargement des icônes…"
   },
   "settings": {
@@ -140,6 +141,11 @@
     "disconnect": "Se déconnecter",
     "not_configured": "YOTO_CLIENT_ID est manquant. Crée une app sur dashboard.yoto.dev et ajoute son client ID dans ton fichier .env (voir le README).",
     "language": "Langue",
+    "theme_title": "Apparence",
+    "theme_auto": "Automatique",
+    "theme_light": "Clair",
+    "theme_dark": "Sombre",
+    "theme_help": "Automatique suit ton appareil. Le choix est gardé dans ce navigateur.",
     "schedule_title": "Synchro de nuit",
     "schedule_text": "Planification : {cron} ({timezone}). Modifie SYNC_CRON dans ton fichier .env pour la changer.",
     "icon_ai_title": "Icônes intelligentes",
