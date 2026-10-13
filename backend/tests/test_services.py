@@ -5,7 +5,7 @@ import pytest
 
 from app.events import EventBroker
 from app.services import Services
-from app.sync.engine import SyncAlreadyRunning, SyncError, SyncResult
+from app.sync.engine import SyncAlreadyRunning, SyncResult
 
 
 class GatedEngine:
@@ -15,14 +15,11 @@ class GatedEngine:
         self.running: set[int] = set()
         self.calls: list[tuple[int, str]] = []
         self.gate = asyncio.Event()
-        self.missing: set[int] = set()
 
     def is_running(self, playlist_id: int) -> bool:
         return playlist_id in self.running
 
     async def _run(self, playlist_id: int, kind: str) -> SyncResult:
-        if playlist_id in self.missing:
-            raise SyncError(f"Playlist {playlist_id} does not exist")
         if playlist_id in self.running:
             raise SyncAlreadyRunning(playlist_id)
         self.running.add(playlist_id)

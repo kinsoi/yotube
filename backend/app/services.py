@@ -65,6 +65,10 @@ class Services:
         except SyncAlreadyRunning:
             self._queue(playlist_id, rebuild)
 
+    def forget_queued(self, playlist_id: int) -> None:
+        """Drop a queued request, e.g. because the playlist was deleted."""
+        self._pending.pop(playlist_id, None)
+
     def _queue(self, playlist_id: int, rebuild: bool) -> None:
         self._pending[playlist_id] = self._pending.get(playlist_id, True) and rebuild
 

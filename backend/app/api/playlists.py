@@ -141,6 +141,7 @@ async def delete_playlist(
         await services.yoto.delete_content(card_id)
     with services.sessions.begin() as session:
         session.delete(_get(session, playlist_id))
+    services.forget_queued(playlist_id)
     return Response(status_code=204)
 
 

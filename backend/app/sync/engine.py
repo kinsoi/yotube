@@ -37,6 +37,10 @@ class SyncError(Exception):
         self.code = code
 
 
+class PlaylistGone(SyncError):
+    """The playlist was deleted (e.g. while a sync was queued)."""
+
+
 def error_code(exc: Exception) -> str:
     """Stable, localizable identifier for a sync failure."""
     if isinstance(exc, SyncError):
@@ -121,6 +125,10 @@ class SyncEngine:
                     self._set_status(playlist_id, "error", str(exc), code=error_code(exc))
                     progress(SyncProgress(playlist_id, "error", message=str(exc)))
                     raise
+                except PlaylistGone as exc:
+                    log.info("Skipped the sync of playlist %s: it was deleted", playlist_id)
+                    progress(SyncProgress(playlist_id, "error", message=str(exc)))
+                    return SyncResult("error", message=str(exc))
                 except Exception as exc:
                     log.exception("Sync of playlist %s failed", playlist_id)
                     self._set_status(playlist_id, "error", str(exc), code=error_code(exc))
@@ -368,7 +376,7 @@ class SyncEngine:
     def _get(session: Session, playlist_id: int) -> Playlist:
         playlist = session.get(Playlist, playlist_id)
         if playlist is None:
-            raise SyncError(f"Playlist {playlist_id} does not exist")
+            raise PlaylistGone(f"Playlist {playlist_id} does not exist")
         return playlist
 
 

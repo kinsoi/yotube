@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import random
 
 import pytest
@@ -343,8 +344,12 @@ async def test_progress_reports_each_phase_in_order(engine, session_factory) -> 
     assert (final_upload.current, final_upload.total) == (3, 3)
 
 
-async def test_missing_playlist_returns_error(engine) -> None:
-    assert (await engine.sync(999)).status == "error"
+async def test_missing_playlist_returns_error(engine, caplog) -> None:
+    with caplog.at_level(logging.INFO):
+        assert (await engine.sync(999)).status == "error"
+    # e.g. a queued sync of a playlist deleted meanwhile: not worth a traceback
+    assert not [r for r in caplog.records if r.levelno >= logging.WARNING or r.exc_info]
+    assert "deleted" in caplog.text
 
 
 def test_reset_interrupted_marks_running_playlists_as_error(session_factory) -> None:

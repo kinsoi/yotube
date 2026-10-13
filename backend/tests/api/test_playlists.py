@@ -263,3 +263,11 @@ def test_track_video_ids_must_be_youtube_ids(client) -> None:
     pid = create_manual(client).json()["id"]
     refused = client.put(f"/api/playlists/{pid}/tracks", json=bad)
     assert (refused.status_code, refused.json()["code"]) == (422, "validation_error")
+
+
+def test_delete_drops_a_queued_sync(real_client, real_services) -> None:
+    pid = create_manual(real_client).json()["id"]
+    _wait_for_tasks(real_client.portal, real_services)
+    real_services._pending[pid] = False
+    assert real_client.delete(f"/api/playlists/{pid}").status_code == 204
+    assert real_services._pending == {}
