@@ -138,7 +138,7 @@ async def test_list_public_icons_maps_fields(client) -> None:
 
 
 @respx.mock
-async def test_upload_icon_sends_multipart_file(client) -> None:
+async def test_upload_icon_sends_the_raw_png(client) -> None:
     route = respx.post(f"{API}/media/displayIcons/user/me/upload").mock(
         return_value=httpx.Response(
             200, json={"displayIcon": {"mediaId": "m9", "url": "https://i/9.png"}}
@@ -148,7 +148,9 @@ async def test_upload_icon_sends_multipart_file(client) -> None:
     assert icon == Icon("m9", "note.png", "https://i/9.png")
     request = route.calls.last.request
     assert request.url.params["autoConvert"] == "true"
-    assert b'name="file"' in request.content
+    # Yoto rejects multipart bodies: "A binary image file is required".
+    assert request.content == b"\x89PNG"
+    assert request.headers["Content-Type"] == "image/png"
 
 
 @respx.mock

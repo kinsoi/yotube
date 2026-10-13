@@ -99,7 +99,8 @@ class YotoClient:
             "POST",
             "/media/displayIcons/user/me/upload",
             params={"autoConvert": "true", "filename": filename},
-            files={"file": (filename, png, "image/png")},
+            content=png,
+            headers={"Content-Type": "image/png"},
         )
         icon = self._json(response, "Uploading an icon")["displayIcon"]
         return Icon(media_id=str(icon["mediaId"]), title=filename, url=str(icon.get("url", "")))
