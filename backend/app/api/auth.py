@@ -38,8 +38,11 @@ async def callback(
         return RedirectResponse("/#/settings?auth=error", status_code=303)
     try:
         await services.auth.handle_callback(code, state)
-    except LoginError:
-        log.warning("Yoto login failed", exc_info=True)
+    except LoginError as exc:
+        log.warning("Yoto login failed: %s", exc)
+        return RedirectResponse("/#/settings?auth=error", status_code=303)
+    except Exception as exc:  # never a 500 page in the middle of the login flow
+        log.warning("Yoto login failed: unexpected %s", type(exc).__name__)
         return RedirectResponse("/#/settings?auth=error", status_code=303)
     return RedirectResponse("/#/settings?auth=ok", status_code=303)
 

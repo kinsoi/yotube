@@ -1,3 +1,7 @@
+import logging
+
+import httpx
+import pytest
 import respx
 
 from tests.api.conftest import PREVIEW_STREAM_URL
@@ -72,3 +76,32 @@ def test_preview_audio_streams_the_song(client) -> None:
 
 def test_preview_audio_rejects_invalid_video_ids(client) -> None:
     assert client.get("/api/preview/not-a-valid-id!").status_code == 422
+
+
+@pytest.mark.parametrize(
+    "error", [httpx.ConnectError("boom"), KeyError("access_token"), ValueError("bad json")]
+)
+def test_callback_failures_of_any_kind_redirect_to_the_error_page(
+    client, services, caplog, error
+) -> None:
+    async def fail(code: str, state: str) -> None:
+        raise error
+
+    services.auth.handle_callback = fail
+    with caplog.at_level(logging.WARNING):
+        response = client.get("/auth/callback?code=secret-c1&state=s1", follow_redirects=False)
+    assert (response.status_code, response.headers["location"]) == (303, "/#/settings?auth=error")
+    assert "secret-c1" not in caplog.text
+    assert "Yoto login failed" in caplog.text
+
+
+def test_yoto_http_errors_are_a_502(client, services) -> None:
+    async def fail() -> list:
+        request = httpx.Request("POST", "https://login.yotoplay.com/oauth/token")
+        raise httpx.HTTPStatusError(
+            "500", request=request, response=httpx.Response(500, request=request)
+        )
+
+    services.yoto.list_public_icons = fail
+    response = client.get("/api/icons?q=lion")
+    assert (response.status_code, response.json()["code"]) == (502, "yoto_error")

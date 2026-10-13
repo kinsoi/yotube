@@ -56,7 +56,10 @@ class AudioPreviewer:
             if byte_range:
                 headers["Range"] = byte_range
             request = self._http.build_request("GET", stream.url, headers=headers)
-            response = await self._http.send(request, stream=True)
+            try:
+                response = await self._http.send(request, stream=True)
+            except httpx.TransportError as exc:
+                raise DownloadFailed(f"Could not reach YouTube for {video_id}: {exc}") from exc
             status = response.status_code
             if status in RELAYED_STATUSES:
                 relayed = {k: response.headers[k] for k in RELAYED_HEADERS if k in response.headers}

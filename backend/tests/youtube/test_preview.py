@@ -95,3 +95,13 @@ async def test_raises_download_failed_when_youtube_keeps_refusing() -> None:
         previewer = AudioPreviewer(FakeResolver(), http)
         with pytest.raises(DownloadFailed):
             await previewer.open("v1", None)
+
+
+@respx.mock
+async def test_network_errors_become_download_failed() -> None:
+    respx.get(STREAM_URL).mock(side_effect=httpx.ConnectError("boom"))
+    respx.get(FRESH_URL).mock(side_effect=httpx.ConnectError("boom"))
+    async with httpx.AsyncClient() as http:
+        previewer = AudioPreviewer(FakeResolver(STREAM_URL, FRESH_URL), http)
+        with pytest.raises(DownloadFailed):
+            await previewer.open("v1", None)

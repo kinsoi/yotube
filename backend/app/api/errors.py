@@ -1,3 +1,4 @@
+import httpx
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -36,6 +37,11 @@ def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(YotoError)
     async def yoto_error(_: Request, exc: YotoError) -> JSONResponse:
         return _problem(502, "yoto_error", str(exc))
+
+    @app.exception_handler(httpx.HTTPError)
+    async def http_error(_: Request, exc: httpx.HTTPError) -> JSONResponse:
+        # Raw httpx errors only escape from Yoto calls (token refresh, API requests).
+        return _problem(502, "yoto_error", f"Could not talk to Yoto ({type(exc).__name__})")
 
     @app.exception_handler(SyncAlreadyRunning)
     async def sync_running(_: Request, exc: SyncAlreadyRunning) -> JSONResponse:
