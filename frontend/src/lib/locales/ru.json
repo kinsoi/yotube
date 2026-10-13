@@ -8,8 +8,7 @@
     "cancel": "Отмена",
     "save": "Сохранить",
     "delete": "Удалить",
-    "close": "Закрыть",
-    "retry": "Повторить"
+    "close": "Закрыть"
   },
   "library": {
     "title": "Мои плейлисты",
@@ -38,9 +37,7 @@
     "fetching": "Читаем плейлист YouTube Music…",
     "uploading": "Отправка {current}/{total}: {title}",
     "icons": "Подбор иконок {current}/{total}",
-    "saving": "Обновляем плейлист Yoto…",
-    "done": "Готово!",
-    "error": "Ошибка синхронизации"
+    "saving": "Обновляем плейлист Yoto…"
   },
   "new": {
     "title": "Новый плейлист",

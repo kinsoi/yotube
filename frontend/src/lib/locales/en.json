@@ -8,8 +8,7 @@
     "cancel": "Cancel",
     "save": "Save",
     "delete": "Delete",
-    "close": "Close",
-    "retry": "Try again"
+    "close": "Close"
   },
   "library": {
     "title": "My playlists",
@@ -38,9 +37,7 @@
     "fetching": "Reading the YouTube Music playlist…",
     "uploading": "Sending {current}/{total}: {title}",
     "icons": "Choosing icons {current}/{total}",
-    "saving": "Updating the Yoto playlist…",
-    "done": "Done!",
-    "error": "Sync failed"
+    "saving": "Updating the Yoto playlist…"
   },
   "new": {
     "title": "New playlist",

@@ -8,8 +8,7 @@
     "cancel": "Annuler",
     "save": "Enregistrer",
     "delete": "Supprimer",
-    "close": "Fermer",
-    "retry": "Réessayer"
+    "close": "Fermer"
   },
   "library": {
     "title": "Mes playlists",
@@ -38,9 +37,7 @@
     "fetching": "Lecture de la playlist YouTube Music…",
     "uploading": "Envoi {current}/{total} : {title}",
     "icons": "Choix des icônes {current}/{total}",
-    "saving": "Mise à jour de la playlist Yoto…",
-    "done": "Terminé !",
-    "error": "Échec de la synchro"
+    "saving": "Mise à jour de la playlist Yoto…"
   },
   "new": {
     "title": "Nouvelle playlist",
