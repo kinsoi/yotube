@@ -70,8 +70,12 @@ class Services:
 
     def _run_pending(self, playlist_id: int) -> None:
         rebuild = self._pending.pop(playlist_id, None)
-        if rebuild is not None:
+        if rebuild is None:
+            return
+        try:
             self.start_sync(playlist_id, rebuild=rebuild)
+        except SyncAlreadyRunning:
+            self._queue(playlist_id, rebuild)  # whoever runs it now drains the queue
 
     def _task_done(self, task: asyncio.Task[None]) -> None:
         self._tasks.discard(task)
@@ -103,15 +107,20 @@ class Services:
             self._pending.pop(playlist_id, None)
 
     async def _sync_and_notify(self, playlist_id: int) -> SyncResult:
+        ran = True
         try:
             return await self.engine.sync(playlist_id, self._publish_progress)
+        except SyncAlreadyRunning:
+            ran = False  # another task is on it and drains the queue when it ends
+            raise
         except AuthRequired:
             self._pending.pop(playlist_id, None)
             self.broker.publish({"type": "auth_required"})
             raise
         finally:
             self.broker.publish({"type": "playlist_updated", "playlist_id": playlist_id})
-            self._run_pending(playlist_id)
+            if ran:
+                self._run_pending(playlist_id)
 
     def _publish_progress(self, progress: SyncProgress) -> None:
         self.broker.publish({"type": "progress", **progress.to_dict()})
