@@ -12,3 +12,7 @@ docs
 frontend/dist
 backend/tests
 backend/dev.db*
+**/.env
+**/.env.*
+**/*.db
+**/*.db-*
