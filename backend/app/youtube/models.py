@@ -26,6 +26,15 @@ class DownloadedAudio:
     mime: str
 
 
+@dataclass(frozen=True)
+class AudioStream:
+    """A direct, short-lived link to a song's audio, playable only from this server's IP."""
+
+    url: str
+    mime: str
+    headers: dict[str, str]
+
+
 class YouTubeError(Exception):
     """Base class for YouTube-side failures."""
 

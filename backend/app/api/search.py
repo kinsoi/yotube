@@ -1,11 +1,15 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Path, Query, Request
+from fastapi.responses import StreamingResponse
+from starlette.background import BackgroundTask
 
 from app.api.deps import ServicesDep
 from app.api.schemas import PlaylistPreview, TrackInfoOut
 
 router = APIRouter(prefix="/api")
+
+VIDEO_ID_PATTERN = r"^[A-Za-z0-9_-]{11}$"
 
 
 @router.get("/search", response_model=list[TrackInfoOut])
@@ -25,4 +29,21 @@ async def preview_playlist(
         title=info.title,
         thumbnail_url=info.thumbnail_url,
         tracks=[TrackInfoOut.model_validate(t) for t in info.tracks],
+    )
+
+
+@router.get("/preview/{video_id}", response_class=StreamingResponse)
+async def preview_audio(
+    video_id: Annotated[str, Path(pattern=VIDEO_ID_PATTERN)],
+    request: Request,
+    services: ServicesDep,
+) -> StreamingResponse:
+    """Relay a song's audio so the browser can play it before it is added."""
+    preview = await services.previews.open(video_id, request.headers.get("range"))
+    return StreamingResponse(
+        preview.body,
+        status_code=preview.status_code,
+        headers=preview.headers,
+        media_type=preview.headers["content-type"],
+        background=BackgroundTask(preview.close),
     )

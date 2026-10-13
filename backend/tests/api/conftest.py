@@ -1,7 +1,8 @@
 import random
-from collections.abc import Iterator
+from collections.abc import AsyncIterator, Iterator
 from dataclasses import dataclass, field
 
+import httpx
 import pytest
 from fastapi.testclient import TestClient
 
@@ -13,7 +14,8 @@ from app.main import create_app
 from app.services import Services
 from app.sync.engine import SyncAlreadyRunning, SyncEngine
 from app.yoto.models import Icon
-from app.youtube.models import TrackInfo
+from app.youtube.models import AudioStream, TrackInfo
+from app.youtube.preview import AudioPreviewer
 from tests.sync.fakes import SOURCE_URL, FakeIcons, FakeMusic, FakeYoto, playlist_info
 
 
@@ -35,9 +37,15 @@ class FakeAuth:
         self.connected = False
 
 
+PREVIEW_STREAM_URL = "https://rr1.googlevideo.com/videoplayback?id=preview"
+
+
 class ApiMusic(FakeMusic):
     async def search(self, query: str, limit: int = 20) -> list[TrackInfo]:
         return [TrackInfo("v1", f"{query} song", "Anne", 100, None)]
+
+    async def audio_stream(self, video_id: str) -> AudioStream:
+        return AudioStream(PREVIEW_STREAM_URL, "audio/mp4", {})
 
 
 class ApiYoto(FakeYoto):
@@ -64,7 +72,13 @@ class RecordingServices(Services):
 
 
 @pytest.fixture
-def services(session_factory, tmp_path) -> RecordingServices:
+async def preview_http() -> AsyncIterator[httpx.AsyncClient]:
+    async with httpx.AsyncClient() as http:
+        yield http
+
+
+@pytest.fixture
+def services(session_factory, tmp_path, preview_http) -> RecordingServices:
     music = ApiMusic(tmp_path)
     music.playlists[SOURCE_URL] = playlist_info("a", "b")
     yoto = ApiYoto()
@@ -79,6 +93,7 @@ def services(session_factory, tmp_path) -> RecordingServices:
         broker=EventBroker(),
         settings_store=DbSettingsStore(session_factory),
         icon_ai_enabled=False,
+        previews=AudioPreviewer(music, preview_http),
     )
 
 

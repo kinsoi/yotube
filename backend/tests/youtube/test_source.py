@@ -5,6 +5,7 @@ import pytest
 from yt_dlp.utils import DownloadError
 
 from app.youtube.models import (
+    AudioStream,
     DownloadedAudio,
     DownloadFailed,
     PlaylistInfo,
@@ -73,6 +74,12 @@ class FakeYdl:
             raise DownloadError(FakeYdl.error)
         if FakeYdl.empty_info:
             return {}
+        if not download:
+            return {
+                "url": "https://rr1.googlevideo.com/videoplayback?id=1",
+                "ext": FakeYdl.ext,
+                "http_headers": {"User-Agent": "yt-dlp-ua"},
+            }
         path = Path(self.opts["outtmpl"].replace("%(ext)s", FakeYdl.ext))
         path.write_bytes(b"audio")
         return {"requested_downloads": [{"filepath": str(path)}]}
@@ -147,3 +154,23 @@ async def test_missing_downloaded_file_info_raises_download_failed(source) -> No
     FakeYdl.empty_info = True
     with pytest.raises(DownloadFailed):
         await source.download_audio("v1")
+
+
+async def test_audio_stream_resolves_a_playable_url_without_downloading(source, tmp_path) -> None:
+    stream = await source.audio_stream("v1")
+    assert stream == AudioStream(
+        "https://rr1.googlevideo.com/videoplayback?id=1", "audio/mp4", {"User-Agent": "yt-dlp-ua"}
+    )
+    assert not (tmp_path / "tmp").exists() or not any((tmp_path / "tmp").iterdir())
+
+
+async def test_audio_stream_of_removed_video_raises_track_unavailable(source) -> None:
+    FakeYdl.error = "ERROR: [youtube] v1: Video unavailable. This video has been removed"
+    with pytest.raises(TrackUnavailable):
+        await source.audio_stream("v1")
+
+
+async def test_audio_stream_without_url_raises_download_failed(source) -> None:
+    FakeYdl.empty_info = True
+    with pytest.raises(DownloadFailed):
+        await source.audio_stream("v1")

@@ -1,3 +1,6 @@
+import respx
+
+from tests.api.conftest import PREVIEW_STREAM_URL
 from tests.sync.fakes import SOURCE_URL
 
 
@@ -46,3 +49,19 @@ def test_settings_roundtrip(client) -> None:
     assert initial["sync_cron"] == "0 3 * * *"
     assert client.patch("/api/settings", json={"language": "ru"}).json()["language"] == "ru"
     assert client.patch("/api/settings", json={"language": "de"}).status_code == 422
+
+
+@respx.mock
+def test_preview_audio_streams_the_song(client) -> None:
+    respx.get(PREVIEW_STREAM_URL).respond(
+        206, content=b"abc", headers={"Content-Range": "bytes 0-2/10", "Content-Length": "3"}
+    )
+    response = client.get("/api/preview/dQw4w9WgXcQ", headers={"Range": "bytes=0-2"})
+    assert response.status_code == 206
+    assert response.content == b"abc"
+    assert response.headers["content-type"] == "audio/mp4"
+    assert response.headers["content-range"] == "bytes 0-2/10"
+
+
+def test_preview_audio_rejects_invalid_video_ids(client) -> None:
+    assert client.get("/api/preview/not-a-valid-id!").status_code == 422

@@ -23,6 +23,7 @@ from app.sync.progress import SyncProgress
 from app.yoto.auth import YotoAuth
 from app.yoto.client import YotoClient
 from app.yoto.errors import AuthRequired
+from app.youtube.preview import AudioPreviewer
 from app.youtube.source import YouTubeMusicSource
 
 log = logging.getLogger(__name__)
@@ -40,6 +41,7 @@ class Services:
     broker: EventBroker
     settings_store: DbSettingsStore
     icon_ai_enabled: bool
+    previews: AudioPreviewer
     _tasks: set[asyncio.Task[None]] = field(default_factory=set)
     _active: set[int] = field(default_factory=set)  # playlists with a background task in flight
     _pending: dict[int, bool] = field(default_factory=dict)  # playlist_id -> rebuild_only
@@ -161,4 +163,5 @@ async def build_services(settings: Settings, stack: AsyncExitStack) -> Services:
         broker=EventBroker(),
         settings_store=settings_store,
         icon_ai_enabled=suggester is not None,
+        previews=AudioPreviewer(music, http),
     )

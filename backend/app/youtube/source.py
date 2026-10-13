@@ -7,6 +7,7 @@ import yt_dlp
 from ytmusicapi import YTMusic
 
 from app.youtube.models import (
+    AudioStream,
     DownloadedAudio,
     DownloadFailed,
     PlaylistInfo,
@@ -77,33 +78,54 @@ class YouTubeMusicSource:
     async def download_audio(self, video_id: str) -> DownloadedAudio:
         return await asyncio.to_thread(self._download, video_id)
 
+    async def audio_stream(self, video_id: str) -> AudioStream:
+        """Resolve a direct audio link for listening in the browser, without downloading."""
+        return await asyncio.to_thread(self._resolve_stream, video_id)
+
+    def _resolve_stream(self, video_id: str) -> AudioStream:
+        info = self._extract(video_id, {}, download=False)
+        url = info.get("url")
+        if not url:
+            raise DownloadFailed(f"yt-dlp returned no audio stream for {video_id}")
+        mime = MIME_BY_EXTENSION.get(str(info.get("ext", "")).lower(), "application/octet-stream")
+        headers = {str(k): str(v) for k, v in (info.get("http_headers") or {}).items()}
+        return AudioStream(url=str(url), mime=mime, headers=headers)
+
     def _download(self, video_id: str) -> DownloadedAudio:
         self._tmp_dir.mkdir(parents=True, exist_ok=True)
         options = {
-            "format": "bestaudio[ext=m4a]/bestaudio",
             "outtmpl": str(self._tmp_dir / f"{video_id}.%(ext)s"),
-            "noplaylist": True,
-            "quiet": True,
-            "no_warnings": True,
-            "noprogress": True,
             "overwrites": True,
         }
-        try:
-            with self._ydl_factory(options) as ydl:
-                info = ydl.extract_info(
-                    f"https://music.youtube.com/watch?v={video_id}", download=True
-                )
-        except yt_dlp.utils.DownloadError as exc:
-            message = str(exc)
-            if any(marker in message.lower() for marker in _UNAVAILABLE_MARKERS):
-                raise TrackUnavailable(message) from exc
-            raise DownloadFailed(message) from exc
+        info = self._extract(video_id, options, download=True)
         try:
             path = Path(info["requested_downloads"][0]["filepath"])
         except (KeyError, IndexError, TypeError) as exc:
             raise DownloadFailed(f"yt-dlp returned no downloaded file for {video_id}") from exc
         mime = MIME_BY_EXTENSION.get(path.suffix.lstrip(".").lower(), "application/octet-stream")
         return DownloadedAudio(path=path, mime=mime)
+
+    def _extract(self, video_id: str, options: dict[str, Any], *, download: bool) -> dict[str, Any]:
+        options = {
+            # m4a first: it plays in every browser and Yoto transcodes it without trouble.
+            "format": "bestaudio[ext=m4a]/bestaudio",
+            "noplaylist": True,
+            "quiet": True,
+            "no_warnings": True,
+            "noprogress": True,
+            **options,
+        }
+        try:
+            with self._ydl_factory(options) as ydl:
+                info = ydl.extract_info(
+                    f"https://music.youtube.com/watch?v={video_id}", download=download
+                )
+        except yt_dlp.utils.DownloadError as exc:
+            message = str(exc)
+            if any(marker in message.lower() for marker in _UNAVAILABLE_MARKERS):
+                raise TrackUnavailable(message) from exc
+            raise DownloadFailed(message) from exc
+        return info or {}
 
 
 def _track_from(raw: dict[str, Any]) -> TrackInfo | None:
