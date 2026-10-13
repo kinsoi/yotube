@@ -169,7 +169,9 @@
     "yoto_error": "Yoto did not answer. Try again in a moment.",
     "validation_error": "Something is missing or invalid in the form.",
     "network": "Cannot reach Yotube. Is the container running?",
-    "generic": "Something went wrong."
+    "generic": "Something went wrong.",
+    "host_not_allowed": "Yotube does not answer to this address. Add it to ALLOWED_HOSTS in the .env file.",
+    "cross_origin": "This request came from another website and was blocked."
   },
   "sync_errors": {
     "auth_required": "Yotube is not connected to Yoto. Connect it in Settings.",

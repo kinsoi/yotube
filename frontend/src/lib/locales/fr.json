@@ -169,7 +169,9 @@
     "yoto_error": "Yoto ne répond pas. Réessaie dans un instant.",
     "validation_error": "Il manque quelque chose ou un champ est invalide.",
     "network": "Impossible de joindre Yotube. Le conteneur tourne-t-il ?",
-    "generic": "Une erreur est survenue."
+    "generic": "Une erreur est survenue.",
+    "host_not_allowed": "Yotube ne répond pas à cette adresse. Ajoute-la à ALLOWED_HOSTS dans le fichier .env.",
+    "cross_origin": "Cette requête venait d'un autre site et a été bloquée."
   },
   "sync_errors": {
     "auth_required": "Yotube n'est pas connecté à Yoto. Connecte-le dans les Réglages.",
