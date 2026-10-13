@@ -41,3 +41,7 @@ def test_best_match_returns_none_without_signal() -> None:
 def test_rank_orders_by_score() -> None:
     assert rank(["night", "star"], ICONS)[0] == STAR
     assert rank(["animal"], ICONS) == [LION, CAT, ELEPHANT]
+
+
+def test_keywords_expand_words_without_an_icon_of_their_own() -> None:
+    assert keywords("Georgian Disco") == ["georgian", "dance", "music", "star"]

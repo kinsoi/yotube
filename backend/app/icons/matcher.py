@@ -80,9 +80,10 @@ def keywords(text: str) -> list[str]:
         word = normalize(raw)
         if len(word) < 3 or word.isdigit() or word in STOPWORDS:
             continue
-        word = TRANSLATIONS.get(word, word)
-        if word not in result:
-            result.append(word)
+        # A translation may list several words, e.g. a concept with no icon of its own.
+        for translated in TRANSLATIONS.get(word, word).split():
+            if translated not in result:
+                result.append(translated)
     return result
 
 

@@ -111,6 +111,11 @@ class IconOut(BaseModel):
     url: str
 
 
+class IconSearchOut(BaseModel):
+    icons: list[IconOut]
+    matched: bool
+
+
 class AuthStatus(BaseModel):
     configured: bool
     connected: bool

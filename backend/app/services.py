@@ -141,7 +141,6 @@ async def build_services(settings: Settings, stack: AsyncExitStack) -> Services:
     )
     yoto = YotoClient(auth, http, settings.yoto_api_url)
     music = YouTubeMusicSource(settings.tmp_dir)
-    catalog = IconCatalog(yoto)
     settings_store = DbSettingsStore(sessions)
 
     suggester = None
@@ -150,6 +149,7 @@ async def build_services(settings: Settings, stack: AsyncExitStack) -> Services:
         stack.push_async_callback(anthropic_client.close)
         suggester = ClaudeKeywordSuggester(anthropic_client, settings.anthropic_model)
 
+    catalog = IconCatalog(yoto, suggester=suggester)
     picker = IconPicker(catalog, yoto, settings_store, suggester)
     engine = SyncEngine(sessions, music, yoto, picker)
     return Services(

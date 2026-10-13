@@ -20,9 +20,16 @@ def test_preview_unknown_playlist_is_404(client) -> None:
 
 
 def test_icons_search(client) -> None:
-    assert client.get("/api/icons?q=lion").json() == [
-        {"media_id": "m-lion", "title": "Lion", "url": "https://i/lion.png"}
-    ]
+    assert client.get("/api/icons?q=lion").json() == {
+        "icons": [{"media_id": "m-lion", "title": "Lion", "url": "https://i/lion.png"}],
+        "matched": True,
+    }
+
+
+def test_icons_search_without_match_lists_the_catalogue(client) -> None:
+    body = client.get("/api/icons?q=georgian disco").json()
+    assert body["matched"] is False
+    assert [icon["title"] for icon in body["icons"]] == ["Lion"]
 
 
 def test_auth_status_login_callback_and_logout(client, services) -> None:

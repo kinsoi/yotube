@@ -3,6 +3,9 @@ English words used in Yoto's public icon titles and tags. Keys are normalized by
 `matcher.normalize` at import time, so accents and case do not matter here."""
 
 RAW_TRANSLATIONS: dict[str, str] = {
+    # English concepts with no icon of their own, mapped to icons that evoke them
+    "disco": "dance music star",
+    "party": "party balloon",
     # French — animals
     "lion": "lion",
     "chat": "cat",
@@ -75,7 +78,7 @@ RAW_TRANSLATIONS: dict[str, str] = {
     "musique": "music",
     "chanson": "music",
     "danse": "dance",
-    "fete": "party",
+    "fete": "party balloon",
     "anniversaire": "birthday",
     "gateau": "cake",
     "pomme": "apple",
@@ -182,7 +185,8 @@ RAW_TRANSLATIONS: dict[str, str] = {
     "песня": "music",
     "песенка": "music",
     "танец": "dance",
-    "праздник": "party",
+    "праздник": "party balloon",
+    "дискотека": "dance music star",
     "день": "birthday",
     "торт": "cake",
     "яблоко": "apple",

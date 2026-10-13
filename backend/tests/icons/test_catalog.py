@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from app.icons.catalog import IconCatalog
+from app.icons.catalog import IconCatalog, IconSearch
 from app.yoto.models import Icon
 
 ICONS = [Icon("m1", "Lion", "u1", ("animal",)), Icon("m2", "Train", "u2", ("vehicle",))]
@@ -53,6 +53,43 @@ async def test_first_load_failure_propagates() -> None:
 
 async def test_search_ranks_and_empty_query_lists_all() -> None:
     catalog = IconCatalog(FakeSource())
-    assert await catalog.search("train") == [ICONS[1]]
-    assert await catalog.search("  ") == ICONS
-    assert await catalog.search("", limit=1) == ICONS[:1]
+    assert await catalog.search("train") == IconSearch([ICONS[1]], matched=True)
+    assert await catalog.search("  ") == IconSearch(ICONS, matched=True)
+    assert await catalog.search("", limit=1) == IconSearch(ICONS[:1], matched=True)
+
+
+async def test_search_without_match_offers_the_whole_catalogue() -> None:
+    catalog = IconCatalog(FakeSource())
+    assert await catalog.search("georgian disco", limit=1) == IconSearch(ICONS, matched=False)
+
+
+class FakeSuggester:
+    def __init__(self, words: list[str], fail: bool = False) -> None:
+        self.words = words
+        self.fail = fail
+        self.calls: list[tuple[str, str]] = []
+
+    async def suggest(self, title: str, artist: str) -> list[str]:
+        self.calls.append((title, artist))
+        if self.fail:
+            raise RuntimeError("Claude down")
+        return self.words
+
+
+async def test_search_without_match_asks_claude_for_related_words() -> None:
+    suggester = FakeSuggester(["Train", "car"])
+    catalog = IconCatalog(FakeSource(), suggester=suggester)
+    assert await catalog.search("choo choo") == IconSearch([ICONS[1]], matched=True)
+    assert suggester.calls == [("choo choo", "")]
+
+
+async def test_search_with_a_match_does_not_ask_claude() -> None:
+    suggester = FakeSuggester(["train"])
+    catalog = IconCatalog(FakeSource(), suggester=suggester)
+    await catalog.search("lion")
+    assert suggester.calls == []
+
+
+async def test_search_falls_back_to_the_catalogue_when_claude_fails() -> None:
+    catalog = IconCatalog(FakeSource(), suggester=FakeSuggester([], fail=True))
+    assert await catalog.search("choo choo") == IconSearch(ICONS, matched=False)
