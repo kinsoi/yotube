@@ -15,15 +15,39 @@ from app.services import Services, build_services
 
 log = logging.getLogger(__name__)
 
+CALLBACK_PATH = "/auth/callback"
+
+
+class RedactOAuthCallback(logging.Filter):
+    """Hide the OAuth code and state that the access log would print for the callback."""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        args = record.args
+        if isinstance(args, tuple) and len(args) >= 3 and isinstance(args[2], str):
+            path = args[2]
+            if path.startswith(f"{CALLBACK_PATH}?"):
+                record.args = (*args[:2], f"{CALLBACK_PATH}?[redacted]", *args[3:])
+        return True
+
+
+def configure_logging(level: str) -> None:
+    logging.basicConfig(
+        level=level.upper(), format="%(asctime)s %(levelname)s %(name)s: %(message)s"
+    )
+    # httpx logs every URL at INFO, including presigned upload links.
+    for name in ("httpx", "httpcore"):
+        logging.getLogger(name).setLevel(logging.WARNING)
+    access = logging.getLogger("uvicorn.access")
+    if not any(isinstance(f, RedactOAuthCallback) for f in access.filters):
+        access.addFilter(RedactOAuthCallback())
+
 
 def create_app(
     settings: Settings | None = None,
     services_factory: Callable[[Settings], Services] | None = None,
 ) -> FastAPI:
     settings = settings or get_settings()
-    logging.basicConfig(
-        level=settings.log_level.upper(), format="%(asctime)s %(levelname)s %(name)s: %(message)s"
-    )
+    configure_logging(settings.log_level)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
