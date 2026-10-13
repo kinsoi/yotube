@@ -93,3 +93,11 @@ async def test_search_with_a_match_does_not_ask_claude() -> None:
 async def test_search_falls_back_to_the_catalogue_when_claude_fails() -> None:
     catalog = IconCatalog(FakeSource(), suggester=FakeSuggester([], fail=True))
     assert await catalog.search("choo choo") == IconSearch(ICONS, matched=False)
+
+
+async def test_duplicate_icons_from_yoto_are_listed_once() -> None:
+    class DuplicatingSource(FakeSource):
+        async def list_public_icons(self) -> list[Icon]:
+            return [*ICONS, Icon("m1", "Lion again", "u1b", ())]
+
+    assert await IconCatalog(DuplicatingSource()).icons() == ICONS

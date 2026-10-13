@@ -49,7 +49,11 @@ class IconCatalog:
             fresh = self._loaded_at is not None and self._clock() - self._loaded_at < self._ttl
             if not fresh:
                 try:
-                    self._icons = await self._source.list_public_icons()
+                    # Yoto's list repeats some icons; the UI keys icons by media id.
+                    unique: dict[str, Icon] = {}
+                    for icon in await self._source.list_public_icons():
+                        unique.setdefault(icon.media_id, icon)
+                    self._icons = list(unique.values())
                     self._loaded_at = self._clock()
                 except Exception:
                     if not self._icons:
