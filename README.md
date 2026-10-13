@@ -2,6 +2,13 @@
 
 Turn YouTube Music playlists into [Yoto](https://yotoplay.com) playlists — and keep them in sync.
 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/library-dark.png">
+    <img src="docs/screenshots/library.png" alt="Yotube library: colourful playlist cards with pixel icons" width="860">
+  </picture>
+</p>
+
 Yotube is a small self-hosted web app (one Docker container) for parents with a Yoto player:
 
 - **Import** a YouTube Music playlist from its link, or **pick songs** one by one with search.
@@ -11,8 +18,14 @@ Yotube is a small self-hosted web app (one Docker container) for parents with a 
   on demand or every night.
 - **Shuffle** mode: the player shuffles songs at every play, and the app order changes at every sync.
 - Every song gets a **16×16 pixel icon** on the player screen, picked from Yoto's icon library
-  (smarter with an optional Claude API key).
-- Interface in **English, French and Russian**.
+  (smarter with an optional Claude API key). You can change any icon by hand.
+- **Listen before adding**: play any search result or imported song right in the browser.
+- Interface in **English, French and Russian**, light or dark, and usable on a phone.
+
+<p align="center">
+  <img src="docs/screenshots/playlist.png" alt="A hand-picked playlist with its songs, icons and settings" width="620">
+  <img src="docs/screenshots/mobile.png" alt="Yotube on a phone" width="200">
+</p>
 
 > Yotube is a personal project, not affiliated with Yoto or YouTube.
 
@@ -32,9 +45,10 @@ players), then rewrites the Yoto playlist. Songs already uploaded are never down
 ### 1. Create a Yoto developer app (once)
 
 1. Go to <https://dashboard.yoto.dev> and sign in with your Yoto account.
-2. Create an application (public client).
+2. Create an application (public client, no client secret).
 3. Add the allowed callback URL: `http://localhost:8080/auth/callback`.
-4. Copy the **Client ID**.
+4. Enable the scopes `user:content:manage` and `offline_access`.
+5. Copy the **Client ID**.
 
 ### 2. Configure
 
@@ -83,9 +97,14 @@ needs to download from YouTube, is about 100 MB). To build it yourself instead:
 | `PORT` | `8080` | HTTP port (must be present in `.env`) |
 | `YTDLP_AUTO_UPDATE` | `true` | Update yt-dlp at container start |
 | `LOG_LEVEL` | `INFO` | Log verbosity |
+| `ALLOWED_HOSTS` | empty | Extra host names allowed to reach Yotube (comma-separated, see below) |
 
-Data (database and Yoto session) lives in the named Docker volume `yotube-data`. Do not bind-mount
-a host folder over `/data`: the container runs as uid 1000 and could not write to it.
+Data (database and Yoto session) lives in the named Docker volume `yotube-data`. If you bind-mount
+a host folder over `/data` instead, make sure it is writable by uid 1000 (the container user).
+
+Yotube answers only to `localhost`, IP addresses, the host of `PUBLIC_URL` and local names ending in
+`.local`, `.lan`, `.home` or `.internal`. If you open it under another name (for example
+`http://nas:8080`), add that name to `ALLOWED_HOSTS`.
 
 ## Updating
 
@@ -109,6 +128,10 @@ docker compose pull && docker compose up -d
 ## Security and fair use
 
 - Yotube has **no login of its own**. Keep it on your home network; never expose it to the internet.
+  It refuses unknown host names and cross-site requests, so a web page you visit cannot drive it.
+- Your Yoto session and the database stay in the `yotube-data` volume; nothing is sent anywhere else
+  except YouTube (to fetch songs), Yoto (to upload them) and, if configured, Anthropic (song titles only,
+  to pick icons).
 - Downloading audio from YouTube may conflict with YouTube's Terms of Service. Use Yotube for
   personal, family use only, with content you are allowed to listen to.
 
@@ -132,8 +155,9 @@ Releases: push a tag `vX.Y.Z`; CI publishes a multi-arch image to `ghcr.io/kinso
 
 Yotube transforme des playlists YouTube Music en playlists Yoto, et les garde synchronisées.
 
-1. Crée une application sur <https://dashboard.yoto.dev>, ajoute l'URL de retour
-   `http://localhost:8080/auth/callback` et copie le *Client ID*.
+1. Crée une application sur <https://dashboard.yoto.dev> (client public), ajoute l'URL de retour
+   `http://localhost:8080/auth/callback`, active les scopes `user:content:manage` et `offline_access`,
+   puis copie le *Client ID*.
 2. `cp .env.example .env`, puis renseigne `YOTO_CLIENT_ID` (et éventuellement `ANTHROPIC_API_KEY`
    pour des icônes plus pertinentes).
 3. `docker compose up -d`, puis ouvre <http://localhost:8080> **sur la machine qui fait tourner Docker** :
@@ -142,6 +166,7 @@ Yotube transforme des playlists YouTube Music en playlists Yoto, et les garde sy
    choisis des chansons. La playlist apparaît dans l'app Yoto ; pour une carte, associe-la à une
    carte MYO vierge dans l'app Yoto.
 
+On peut écouter chaque chanson avant de l'ajouter, et choisir un thème clair ou sombre.
 L'interface est disponible en français, anglais et russe. Usage strictement personnel et familial ;
 ne l'expose pas sur Internet.
 
