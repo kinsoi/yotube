@@ -72,6 +72,11 @@
     "added": "Added",
     "no_results": "No song found."
   },
+  "preview": {
+    "play": "Listen to {title}",
+    "stop": "Stop {title}",
+    "error": "This song cannot be played. Try again."
+  },
   "options": {
     "shuffle": "Shuffle",
     "shuffle_help": "The player shuffles the songs every time the card is played, and the order in the app changes at every sync.",

@@ -72,6 +72,11 @@
     "added": "Ajoutée",
     "no_results": "Aucune chanson trouvée."
   },
+  "preview": {
+    "play": "Écouter {title}",
+    "stop": "Arrêter {title}",
+    "error": "Impossible de lire cette chanson. Réessaie."
+  },
   "options": {
     "shuffle": "Lecture aléatoire",
     "shuffle_help": "Le lecteur mélange les chansons à chaque fois que la carte est jouée, et l'ordre dans l'app change à chaque synchro.",

@@ -1,5 +1,6 @@
 <script lang="ts">
   import ColorPicker from '../components/ColorPicker.svelte'
+  import PreviewButton from '../components/PreviewButton.svelte'
   import Toggle from '../components/Toggle.svelte'
   import TrackSearch from '../components/TrackSearch.svelte'
   import { api } from '../lib/api'
@@ -134,7 +135,10 @@
         </div>
         <ol class="tracks muted">
           {#each preview.tracks.slice(0, 8) as track, index (`${track.video_id}-${index}`)}
-            <li>{track.title} <span>· {formatDuration(track.duration)}</span></li>
+            <li>
+              <PreviewButton videoId={track.video_id} title={track.title} />
+              <span>{track.title} · {formatDuration(track.duration)}</span>
+            </li>
           {/each}
           {#if preview.tracks.length > 8}<li>…</li>{/if}
         </ol>
@@ -233,9 +237,16 @@
   }
   .tracks {
     margin: 0;
-    padding-left: 20px;
+    padding: 0;
+    list-style: none;
     display: grid;
-    gap: 4px;
+    gap: 6px;
+  }
+  .tracks li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
   }
   .compose {
     display: grid;
