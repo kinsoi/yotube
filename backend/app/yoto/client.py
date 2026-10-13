@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from collections.abc import Awaitable, Callable, Sequence
+from collections.abc import AsyncIterator, Awaitable, Callable, Sequence
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -13,6 +13,14 @@ from app.youtube.urls import is_allowed_image_url
 log = logging.getLogger(__name__)
 
 RETRYABLE_STATUS = frozenset({429, 500, 502, 503, 504})
+UPLOAD_CHUNK_SIZE = 256 * 1024
+
+
+async def _read_chunks(path: Path) -> AsyncIterator[bytes]:
+    """Stream a file without holding it all in memory (songs can be hundreds of MB)."""
+    with path.open("rb") as file:
+        while chunk := await asyncio.to_thread(file.read, UPLOAD_CHUNK_SIZE):
+            yield chunk
 
 
 class TokenProvider(Protocol):
@@ -51,9 +59,12 @@ class YotoClient:
         upload_id = str(upload["uploadId"])
 
         if upload_url:  # Yoto returns no URL when it already has this exact file.
-            content = await asyncio.to_thread(path.read_bytes)
+            size = (await asyncio.to_thread(path.stat)).st_size
             response = await self._http.put(
-                upload_url, content=content, headers={"Content-Type": mime}
+                upload_url,
+                content=_read_chunks(path),
+                # the presigned PUT needs a length; a streamed body would be sent chunked
+                headers={"Content-Type": mime, "Content-Length": str(size)},
             )
             if response.is_error:
                 raise YotoError(f"Uploading audio failed (HTTP {response.status_code})")

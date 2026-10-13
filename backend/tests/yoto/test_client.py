@@ -227,3 +227,37 @@ async def test_upload_cover_rejects_non_allowed_urls_without_a_request(client, u
     with pytest.raises(YotoError):
         await client.upload_cover_from_url(url)
     assert respx.calls.call_count == 0
+
+
+@respx.mock
+async def test_upload_audio_streams_the_file_with_a_content_length(
+    client, tmp_path, monkeypatch
+) -> None:
+    big = tmp_path / "big.m4a"
+    payload = bytes(range(256)) * 1024  # 256 KiB: several chunks
+    big.write_bytes(payload)
+
+    def no_read_bytes(self: Path) -> bytes:
+        raise AssertionError("the whole file must not be loaded in memory")
+
+    monkeypatch.setattr(Path, "read_bytes", no_read_bytes)
+    received: dict[str, object] = {}
+
+    async def capture(request: httpx.Request) -> httpx.Response:
+        received["body"] = await request.aread()
+        received["headers"] = request.headers
+        return httpx.Response(200)
+
+    mock_upload_url()
+    respx.put(UPLOAD_URL).mock(side_effect=capture)
+    respx.get(f"{API}/media/upload/up-1/transcoded").mock(
+        return_value=httpx.Response(200, json=TRANSCODED)
+    )
+
+    await client.upload_audio(big, "audio/mp4")
+
+    headers = received["headers"]
+    assert isinstance(headers, httpx.Headers)
+    assert received["body"] == payload
+    assert headers["Content-Length"] == str(len(payload))
+    assert "transfer-encoding" not in headers
