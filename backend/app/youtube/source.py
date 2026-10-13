@@ -15,7 +15,7 @@ from app.youtube.models import (
     TrackInfo,
     TrackUnavailable,
 )
-from app.youtube.urls import parse_playlist_id
+from app.youtube.urls import is_valid_video_id, parse_playlist_id
 
 MIME_BY_EXTENSION = {
     "m4a": "audio/mp4",
@@ -76,10 +76,12 @@ class YouTubeMusicSource:
         )
 
     async def download_audio(self, video_id: str) -> DownloadedAudio:
+        _check_video_id(video_id)
         return await asyncio.to_thread(self._download, video_id)
 
     async def audio_stream(self, video_id: str) -> AudioStream:
         """Resolve a direct audio link for listening in the browser, without downloading."""
+        _check_video_id(video_id)
         return await asyncio.to_thread(self._resolve_stream, video_id)
 
     def _resolve_stream(self, video_id: str) -> AudioStream:
@@ -126,6 +128,12 @@ class YouTubeMusicSource:
                 raise TrackUnavailable(message) from exc
             raise DownloadFailed(message) from exc
         return info or {}
+
+
+def _check_video_id(video_id: str) -> None:
+    # The id goes into a file path and a URL: never hand anything else to yt-dlp.
+    if not is_valid_video_id(video_id):
+        raise TrackUnavailable(f"Invalid video id: {video_id[:40]!r}")
 
 
 def _track_from(raw: dict[str, Any]) -> TrackInfo | None:

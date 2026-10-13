@@ -3,6 +3,8 @@ from urllib.parse import parse_qs, urlparse
 
 from app.youtube.models import InvalidPlaylistUrl
 
+VIDEO_ID_PATTERN = r"^[A-Za-z0-9_-]{11}$"
+_VIDEO_ID_RE = re.compile(VIDEO_ID_PATTERN)
 _ID_RE = re.compile(r"^[A-Za-z0-9_-]{10,80}$")
 _HOSTS = frozenset(
     {"music.youtube.com", "www.youtube.com", "youtube.com", "m.youtube.com", "youtu.be"}
@@ -11,6 +13,11 @@ _IMAGE_HOSTS = frozenset(
     {"i.ytimg.com", "yt3.ggpht.com", "yt3.googleusercontent.com", "lh3.googleusercontent.com"}
 )
 _IMAGE_SUFFIXES = (".googleusercontent.com", ".ytimg.com")
+
+
+def is_valid_video_id(value: str) -> bool:
+    """True for a YouTube video id (11 URL-safe characters); it ends up in file names."""
+    return bool(_VIDEO_ID_RE.fullmatch(value))
 
 
 def is_allowed_image_url(value: str | None) -> bool:

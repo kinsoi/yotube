@@ -6,10 +6,9 @@ from starlette.background import BackgroundTask
 
 from app.api.deps import ServicesDep
 from app.api.schemas import PlaylistPreview, TrackInfoOut
+from app.youtube.urls import VIDEO_ID_PATTERN
 
 router = APIRouter(prefix="/api")
-
-VIDEO_ID_PATTERN = r"^[A-Za-z0-9_-]{11}$"
 
 
 @router.get("/search", response_model=list[TrackInfoOut])

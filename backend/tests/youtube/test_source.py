@@ -16,6 +16,7 @@ from app.youtube.models import (
 from app.youtube.source import YouTubeMusicSource
 
 PL = "PLx0sYbCqOb8TBPRdmBHs5Iftvv9TPboYG"
+VID = "lionSong-01"
 
 
 def raw_track(video_id: str | None, title: str, **extra: Any) -> dict[str, Any]:
@@ -118,21 +119,21 @@ async def test_unreadable_playlist_raises_not_found(source) -> None:
 
 
 async def test_download_returns_file_and_mime(source, tmp_path) -> None:
-    audio = await source.download_audio("v1")
-    assert audio == DownloadedAudio(tmp_path / "tmp" / "v1.m4a", "audio/mp4")
+    audio = await source.download_audio(VID)
+    assert audio == DownloadedAudio(tmp_path / "tmp" / f"{VID}.m4a", "audio/mp4")
     assert audio.path.read_bytes() == b"audio"
 
 
 async def test_download_of_removed_video_raises_track_unavailable(source) -> None:
     FakeYdl.error = "ERROR: [youtube] v1: Video unavailable. This video has been removed"
     with pytest.raises(TrackUnavailable):
-        await source.download_audio("v1")
+        await source.download_audio(VID)
 
 
 async def test_other_download_errors_are_transient(source) -> None:
     FakeYdl.error = "ERROR: Unable to download webpage: <urlopen error timed out>"
     with pytest.raises(DownloadFailed):
-        await source.download_audio("v1")
+        await source.download_audio(VID)
 
 
 @pytest.mark.parametrize(
@@ -147,17 +148,17 @@ async def test_other_download_errors_are_transient(source) -> None:
 async def test_transient_yt_dlp_messages_are_not_treated_as_unavailable(source, message) -> None:
     FakeYdl.error = message
     with pytest.raises(DownloadFailed):
-        await source.download_audio("v1")
+        await source.download_audio(VID)
 
 
 async def test_missing_downloaded_file_info_raises_download_failed(source) -> None:
     FakeYdl.empty_info = True
     with pytest.raises(DownloadFailed):
-        await source.download_audio("v1")
+        await source.download_audio(VID)
 
 
 async def test_audio_stream_resolves_a_playable_url_without_downloading(source, tmp_path) -> None:
-    stream = await source.audio_stream("v1")
+    stream = await source.audio_stream(VID)
     assert stream == AudioStream(
         "https://rr1.googlevideo.com/videoplayback?id=1", "audio/mp4", {"User-Agent": "yt-dlp-ua"}
     )
@@ -167,10 +168,24 @@ async def test_audio_stream_resolves_a_playable_url_without_downloading(source, 
 async def test_audio_stream_of_removed_video_raises_track_unavailable(source) -> None:
     FakeYdl.error = "ERROR: [youtube] v1: Video unavailable. This video has been removed"
     with pytest.raises(TrackUnavailable):
-        await source.audio_stream("v1")
+        await source.audio_stream(VID)
 
 
 async def test_audio_stream_without_url_raises_download_failed(source) -> None:
     FakeYdl.empty_info = True
     with pytest.raises(DownloadFailed):
-        await source.audio_stream("v1")
+        await source.audio_stream(VID)
+
+
+class ExplodingYdl:
+    def __init__(self, opts: dict[str, Any]) -> None:
+        raise AssertionError("yt-dlp must not be called for an invalid video id")
+
+
+@pytest.mark.parametrize("video_id", ["dQw4w9WgXcQ/../../x", "v1", "dQw4w9WgXcQ&x", ""])
+async def test_invalid_video_ids_are_refused_before_yt_dlp(tmp_path, video_id) -> None:
+    source = YouTubeMusicSource(tmp_path / "tmp", ytmusic=FakeYTMusic(), ydl_factory=ExplodingYdl)
+    with pytest.raises(TrackUnavailable, match="Invalid video id"):
+        await source.download_audio(video_id)
+    with pytest.raises(TrackUnavailable, match="Invalid video id"):
+        await source.audio_stream(video_id)

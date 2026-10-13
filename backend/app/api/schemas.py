@@ -3,12 +3,14 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from app.youtube.urls import VIDEO_ID_PATTERN
+
 Color = Literal["orange", "yellow", "blue", "green", "pink", "purple", "red", "teal"]
 Language = Literal["en", "fr", "ru"]
 
 
 class TrackIn(BaseModel):
-    video_id: str = Field(min_length=1, max_length=32)
+    video_id: str = Field(pattern=VIDEO_ID_PATTERN)
     title: str = Field(min_length=1, max_length=300)
     artist: str = Field(default="", max_length=300)
     duration: int | None = Field(default=None, ge=0)

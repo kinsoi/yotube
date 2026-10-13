@@ -12,11 +12,11 @@ def create_manual(client, **overrides):
         "source_type": "manual",
         "tracks": [
             {
-                "video_id": "a",
+                "video_id": "songAAAAA01",
                 "title": "Song a",
                 "thumbnail_url": "https://i.ytimg.com/vi/a/hq.jpg",
             },
-            {"video_id": "b", "title": "Song b"},
+            {"video_id": "songBBBBB02", "title": "Song b"},
         ],
         **overrides,
     }
@@ -27,7 +27,7 @@ def test_create_manual_playlist_stores_tracks_and_starts_sync(client, services) 
     response = create_manual(client)
     assert response.status_code == 201
     data = response.json()
-    assert [t["video_id"] for t in data["tracks"]] == ["a", "b"]
+    assert [t["video_id"] for t in data["tracks"]] == ["songAAAAA01", "songBBBBB02"]
     assert data["cover_url"] == "https://i.ytimg.com/vi/a/hq.jpg"
     assert data["auto_sync"] is False
     assert services.started == [(data["id"], False)]
@@ -92,15 +92,15 @@ def test_update_triggers_rebuild_only_when_synced_and_relevant(client, services)
 def test_replace_tracks_only_for_manual_playlists(client, services) -> None:
     pid = create_manual(client).json()["id"]
     response = client.put(
-        f"/api/playlists/{pid}/tracks", json=[{"video_id": "c", "title": "Song c"}]
+        f"/api/playlists/{pid}/tracks", json=[{"video_id": "songCCCCC03", "title": "Song c"}]
     )
-    assert [t["video_id"] for t in response.json()["tracks"]] == ["c"]
+    assert [t["video_id"] for t in response.json()["tracks"]] == ["songCCCCC03"]
 
     yt = client.post(
         "/api/playlists", json={"title": "Kids", "source_type": "youtube", "source_url": SOURCE_URL}
     ).json()
     refused = client.put(
-        f"/api/playlists/{yt['id']}/tracks", json=[{"video_id": "c", "title": "c"}]
+        f"/api/playlists/{yt['id']}/tracks", json=[{"video_id": "songCCCCC03", "title": "c"}]
     )
     assert (refused.status_code, refused.json()["code"]) == (409, "not_manual")
 
@@ -191,8 +191,8 @@ def test_delete_keeps_playlist_when_yoto_deletion_fails(client, services) -> Non
 
 def test_manual_cover_ignores_non_allowed_thumbnail_hosts(client) -> None:
     tracks = [
-        {"video_id": "a", "title": "A", "thumbnail_url": "http://169.254.169.254/x.jpg"},
-        {"video_id": "b", "title": "B", "thumbnail_url": "https://yt3.ggpht.com/b.jpg"},
+        {"video_id": "songAAAAA01", "title": "A", "thumbnail_url": "http://169.254.169.254/x.jpg"},
+        {"video_id": "songBBBBB02", "title": "B", "thumbnail_url": "https://yt3.ggpht.com/b.jpg"},
     ]
     assert create_manual(client, tracks=tracks).json()["cover_url"] == "https://yt3.ggpht.com/b.jpg"
     bad = create_manual(client, tracks=tracks[:1]).json()
@@ -232,7 +232,7 @@ def test_edit_during_a_running_sync_triggers_a_second_run(real_client, real_serv
     assert real_services.engine.is_running(pid)
 
     # edits while the first sync is in flight: queued, not dropped
-    new_tracks = [{"video_id": "z", "title": "Song z"}]
+    new_tracks = [{"video_id": "songZZZZZ26", "title": "Song z"}]
     assert real_client.put(f"/api/playlists/{pid}/tracks", json=new_tracks).status_code == 200
     assert real_services._pending == {pid: False}
     # the explicit endpoint still reports the conflict
@@ -254,3 +254,12 @@ def test_queued_requests_merge_with_full_sync_winning(real_services) -> None:
     assert real_services._pending == {1: False}
     real_services.request_sync(1, rebuild=True)
     assert real_services._pending == {1: False}
+
+
+def test_track_video_ids_must_be_youtube_ids(client) -> None:
+    bad = [{"video_id": "dQw4w9WgXcQ/../../x", "title": "Evil"}]
+    response = create_manual(client, tracks=bad)
+    assert (response.status_code, response.json()["code"]) == (422, "validation_error")
+    pid = create_manual(client).json()["id"]
+    refused = client.put(f"/api/playlists/{pid}/tracks", json=bad)
+    assert (refused.status_code, refused.json()["code"]) == (422, "validation_error")
