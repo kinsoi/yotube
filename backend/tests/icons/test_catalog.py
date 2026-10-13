@@ -101,3 +101,31 @@ async def test_duplicate_icons_from_yoto_are_listed_once() -> None:
             return [*ICONS, Icon("m1", "Lion again", "u1b", ())]
 
     assert await IconCatalog(DuplicatingSource()).icons() == ICONS
+
+
+async def test_claude_suggestions_are_cached_per_query() -> None:
+    suggester = FakeSuggester(["train"])
+    catalog = IconCatalog(FakeSource(), suggester=suggester)
+    first = await catalog.search("choo choo")
+    again = await catalog.search("  Choo Choo ")
+    assert first == again
+    assert len(suggester.calls) == 1
+
+
+async def test_claude_suggestion_cache_is_bounded() -> None:
+    suggester = FakeSuggester(["train"])
+    catalog = IconCatalog(FakeSource(), suggester=suggester)
+    for n in range(130):
+        await catalog.search(f"zzz{n}")
+    await catalog.search("zzz129")  # recent: cached
+    assert len(suggester.calls) == 130
+    await catalog.search("zzz0")  # evicted
+    assert len(suggester.calls) == 131
+
+
+async def test_failed_claude_suggestions_are_not_cached() -> None:
+    suggester = FakeSuggester([], fail=True)
+    catalog = IconCatalog(FakeSource(), suggester=suggester)
+    await catalog.search("choo choo")
+    await catalog.search("choo choo")
+    assert len(suggester.calls) == 2

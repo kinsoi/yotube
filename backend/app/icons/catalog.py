@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from collections import OrderedDict
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -10,6 +11,8 @@ from app.timeutil import utcnow
 from app.yoto.models import Icon
 
 log = logging.getLogger(__name__)
+
+SUGGESTION_CACHE_SIZE = 128  # icon search runs as the user types: never pay twice
 
 
 class IconSource(Protocol):
@@ -43,6 +46,7 @@ class IconCatalog:
         self._icons: list[Icon] = []
         self._loaded_at: datetime | None = None
         self._lock = asyncio.Lock()
+        self._suggestions: OrderedDict[str, list[str]] = OrderedDict()
 
     async def icons(self) -> list[Icon]:
         async with self._lock:
@@ -74,9 +78,17 @@ class IconCatalog:
     async def _suggested(self, query: str, icons: list[Icon]) -> list[Icon]:
         if self._suggester is None:
             return []
+        key = " ".join(normalize(query).split())
+        words = self._suggestions.get(key)
+        if words is not None:
+            self._suggestions.move_to_end(key)
+            return rank(words, icons)
         try:
             words = [normalize(word) for word in await self._suggester.suggest(query, "")]
         except Exception:
             log.warning("Claude icon suggestion failed for %r", query, exc_info=True)
             return []
+        self._suggestions[key] = words
+        while len(self._suggestions) > SUGGESTION_CACHE_SIZE:
+            self._suggestions.popitem(last=False)
         return rank(words, icons)
